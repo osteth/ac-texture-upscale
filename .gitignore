@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+*.pdb
+
+# Game data and anything derived from it -- never commit
+*.dat
+*.png
+*.webp
+*.bmp
+*.jpg
+*.idx
+*.pal
+*.bin
+*.tsv
+*.exe
+work/
+datsets/
+dats/
+
+# Local secrets / machine files
+*.txt
+!requirements.txt
+__pycache__/
+.vs/
+*.user
