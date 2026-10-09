@@ -1,8 +1,18 @@
 # AC texture upscale
 
-Tools for upscaling Asheron's Call's 3D textures with Real-ESRGAN and packing them back into the client's
-dat files. The result is a client-only upgrade: it keeps dat iteration numbers unchanged, so it works on any
-ACE server with no server changes, and players opt in by swapping two files.
+**An HD texture upgrade for Asheron's Call that stays end-of-retail compatible.**
+
+Emulator servers have shipped custom dat files before, but then their players have to swap back to the
+end-of-retail dats to join any other server. So most servers stick to end-of-retail dats, and AC's graphics
+have stayed frozen.
+
+This pack upgrades the textures and changes nothing else that a server can see. The dat version numbers and all
+gameplay data are identical to end of retail, so every end-of-retail server sees a normal retail client.
+**Install it once and play on any end-of-retail server.** It's entirely client-side, so there's nothing for
+server admins to do and nothing for players to maintain. You can switch back to retail in a second.
+
+This repo holds the tools that build it: Real-ESRGAN upscaling on GPU workers, re-encoding to the game's
+formats, and rebuilding the dats.
 
 **Release v1** ([docs/RELEASE.md](docs/RELEASE.md)): every texture on 3D models plus the outdoor ground at 2x,
 with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1.65 GB and `client_highres.dat`

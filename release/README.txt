@@ -12,9 +12,12 @@ It only replaces two files in your Asheron's Call folder:
     client_portal.dat
     client_highres.dat
 
-It's client-side only. It works on any server that runs the end-of-retail
-game data, and nothing changes for the server or for other players. You can
-remove it at any time.
+It stays END-OF-RETAIL COMPATIBLE. Unlike custom dat files, which tie you to
+one server, this pack changes only textures: the dat version numbers and all
+gameplay data are identical to end of retail. Every end-of-retail server sees
+a normal retail client, so you install it once and play on any of them, with
+no swapping files back and forth. It's entirely client-side, so servers need
+no changes, and you can switch back to retail at any time.
 
 
 Requirements
