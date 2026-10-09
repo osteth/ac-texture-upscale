@@ -3,379 +3,313 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Asheron's Call HD textures: retail vs 2x Real-ESRGAN upscale, in game and texture by texture.">
-<title>Dereth Texture Bench</title>
+<title>AC-HD</title>
+<meta name="description" content="AC-HD: high-definition textures for Asheron's Call that stay end-of-retail compatible. Install once, play on any end-of-retail server.">
+<meta property="og:title" content="AC-HD: HD textures for Asheron's Call">
+<meta property="og:description" content="Every creature, suit of armor, building and blade of grass at twice the resolution, end-of-retail compatible.">
+<meta property="og:image" content="https://osteth.github.io/ac-texture-upscale/img/ingame_startroom_after.webp">
+<meta property="og:url" content="https://osteth.github.io/ac-texture-upscale/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: AC's own UI language (dark slate panels, bronze-gold trim) carried into a single-column landing page:
+   hero with live compare -> three promises -> comparisons -> what's upgraded -> install -> FAQ. Dark by design. */
+:root {
+  --night: #0f1216;      /* page */
+  --slate: #181d23;      /* panels */
+  --slate-2: #222931;    /* raised */
+  --line: #34404c;
+  --gold: #d4a64a;       /* AC trim */
+  --gold-ink: #1b1406;
+  --parch: #ece4d2;      /* headings */
+  --text: #c9ced4;
+  --muted: #8d97a2;
+  --f-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --f-body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+html { scroll-behavior: smooth }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }
+body { margin: 0; background: var(--night); color: var(--text); font: 18px/1.55 var(--f-body); padding-inline: 16px; padding-block: 0 48px }
+img { max-width: 100%; height: auto; display: block }
+a { color: var(--gold) }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px }
+.wrap { max-width: 1120px; margin: 0 auto }
+h1, h2, h3 { font-family: var(--f-display); color: var(--parch); text-wrap: balance; margin: 0 }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: .02em }
+.eyebrow { font: 700 .78rem/1 var(--f-body); letter-spacing: .16em; text-transform: uppercase; color: var(--gold) }
+section { padding-block: 56px 8px }
+.lede { color: var(--muted); max-width: 62ch; margin: 10px 0 0 }
+
+/* top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 18px; flex-wrap: wrap }
+.brand { font: 700 1.35rem/1 var(--f-display); color: var(--parch); letter-spacing: .06em; text-decoration: none }
+.brand span { color: var(--gold) }
+.top nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: .95rem }
+.top nav a { color: var(--muted); text-decoration: none }
+.top nav a:hover { color: var(--parch) }
+
+/* hero */
+.hero { padding-block: 28px 0; display: grid; gap: 22px }
+.hero h1 { font-size: clamp(2.4rem, 6.5vw, 4.6rem); line-height: 1.02; letter-spacing: .015em }
+.hero h1 em { font-style: normal; color: var(--gold) }
+.hero .sub { font-size: clamp(1.08rem, 2vw, 1.3rem); max-width: 58ch; margin: 0; color: var(--text) }
+.cta { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center }
+.btn { display: inline-flex; align-items: center; gap: 10px; background: var(--gold); color: var(--gold-ink); font-weight: 700; text-decoration: none; padding: 13px 22px; border-radius: 6px; border: 1px solid #f0cf86; box-shadow: 0 1px 0 #f5dca4 inset }
+.btn:hover { filter: brightness(1.07) }
+.btn small { font-weight: 500; opacity: .75 }
+.ghost { color: var(--parch); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 2px }
+.cta-note { color: var(--muted); font-size: .92rem; width: 100% }
+
+/* framed compare (AC-style gold-trimmed window) */
+.frame { border: 1px solid #5b4a26; border-radius: 8px; padding: 6px; background: linear-gradient(#2a2416, #15130e); box-shadow: 0 0 0 1px #000, 0 18px 40px rgba(0,0,0,.45) }
+.shot { position: relative; line-height: 0; border-radius: 4px; overflow: hidden; cursor: ew-resize; touch-action: pan-y; user-select: none; -webkit-user-select: none }
+.shot img { width: 100%; -webkit-user-drag: none }
+.shot .top-img { position: absolute; inset: 0 }
+.shot .handle { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--gold); pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,.6) }
+.shot .handle::after { content: "\2194"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: var(--gold-ink); font: 700 20px/38px var(--f-body); text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.5) }
+.tag { position: absolute; top: 10px; font: 700 .74rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; padding: 6px 9px; border-radius: 4px; background: rgba(10,12,15,.78); color: #fff; pointer-events: none }
+.tag.l { left: 10px } .tag.r { right: 10px; color: var(--gold) }
+.caption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: .9rem; padding: 10px 4px 2px }
+
+/* promises */
+.promises { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px }
+.promise { background: var(--slate); border: 1px solid var(--line); border-top: 2px solid var(--gold); border-radius: 6px; padding: 20px 20px 18px }
+.promise h3 { font-size: 1.12rem; margin-bottom: 8px }
+.promise p { margin: 0; color: var(--text) }
+.problem { margin-top: 26px; background: var(--slate-2); border-left: 3px solid var(--gold); padding: 16px 20px; border-radius: 0 6px 6px 0; max-width: 78ch }
+.problem p { margin: 0 }
+
+/* comparisons */
+.compares { display: grid; gap: 34px; margin-top: 26px }
+.compare h3 { font-size: 1.25rem; margin-bottom: 4px }
+.compare p { margin: 0 0 12px; color: var(--muted); max-width: 70ch }
+details.zoom { margin-top: 10px }
+details.zoom summary { cursor: pointer; color: var(--gold); font-weight: 700; font-size: .95rem }
+details.zoom img { margin-top: 10px; border-radius: 6px; border: 1px solid var(--line) }
+
+/* upgraded */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 24px }
+.stat { background: var(--slate); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px }
+.stat b { display: block; font: 700 1.9rem/1.1 var(--f-display); color: var(--gold); font-variant-numeric: tabular-nums }
+.stat span { color: var(--muted); font-size: .92rem }
+.list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 26px; margin: 22px 0 0; padding: 0; list-style: none }
+.list li { padding-left: 22px; position: relative }
+.list li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; transform: rotate(45deg); background: var(--gold) }
+.list li.no::before { background: var(--line) }
+
+/* install */
+.steps { counter-reset: s; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; padding: 0; list-style: none }
+.steps li { counter-increment: s; background: var(--slate); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px 18px 64px; position: relative; min-width: 0 }
+.steps li::before { content: counter(s); position: absolute; left: 18px; top: 16px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gold); color: var(--gold); font: 700 1rem/30px var(--f-display); text-align: center }
+.steps b { color: var(--parch) }
+code { font: .88em/1.4 Consolas, ui-monospace, monospace; background: var(--slate-2); padding: 2px 6px; border-radius: 4px; color: var(--parch); overflow-wrap: anywhere }
+
+/* faq */
+.faq { margin-top: 20px; display: grid; gap: 10px; max-width: 860px }
+.faq details { background: var(--slate); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px }
+.faq summary { cursor: pointer; color: var(--parch); font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px }
+.faq summary::-webkit-details-marker { display: none }
+.faq summary::after { content: "+"; color: var(--gold); font-weight: 700 }
+.faq details[open] summary::after { content: "\2212" }
+.faq p { margin: 10px 0 0 }
+
+/* closing */
+.closing { margin-top: 56px; text-align: center; padding: 40px 20px; border: 1px solid #5b4a26; border-radius: 8px; background: radial-gradient(ellipse at top, #241e12, var(--slate) 70%) }
+.closing h2 { margin-bottom: 10px }
+.closing p { margin: 0 auto 20px; max-width: 54ch; color: var(--text) }
+.closing .cta { justify-content: center }
+footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between }
+footer nav { display: flex; gap: 18px; flex-wrap: wrap }
+footer a { color: var(--muted) }
+</style>
 </head>
 <body>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-/* Layout: sticky toolbar, filmstrip of all 40 test textures, then a three-up (or wipe) inspection bench with synced pan/zoom. */
-:root {
-  --bg: #eceef0; --panel: #f8f9fa; --ink: #1c2126; --muted: #5d6670; --line: #cfd4d9;
-  --accent: #8a5a12; --accent-ink: #ffffff; --chip: #e1e5e9;
-  --chk-a: #b9bec4; --chk-b: #d9dde1;
-  --f-display: "Cinzel", "Trajan Pro", Georgia, serif;
-  --f-body: "Archivo", "Segoe UI", system-ui, sans-serif;
-  --f-mono: "JetBrains Mono", Consolas, ui-monospace, monospace;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #15181b; --panel: #1d2125; --ink: #e6e9ec; --muted: #9aa3ad; --line: #30363c;
-  --accent: #d9a650; --accent-ink: #1a1408; --chip: #272c31; --chk-a: #2b3035; --chk-b: #3a4047; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #15181b; --panel: #1d2125; --ink: #e6e9ec; --muted: #9aa3ad; --line: #30363c;
-  --accent: #d9a650; --accent-ink: #1a1408; --chip: #272c31; --chk-a: #2b3035; --chk-b: #3a4047; color-scheme: dark }
-
-* { box-sizing: border-box }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; padding-inline: 16px; padding-block: 0 32px }
-.wrap { max-width: 1500px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px }
-
-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; padding-top: 18px }
-h1 { font-family: var(--f-display); font-weight: 600; font-size: 1.55rem; letter-spacing: .04em; margin: 0; text-wrap: balance }
-header p { margin: 0; color: var(--muted); max-width: 70ch }
-
-.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 8px;
-  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; border-bottom: 1px solid var(--line) }
-.group { display: flex; flex-wrap: wrap; align-items: center; gap: 4px }
-.group > span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 4px }
-button { font: inherit; font-size: 13px; color: var(--ink); background: var(--chip); border: 1px solid transparent; border-radius: 6px; padding: 4px 10px; cursor: pointer }
-button:hover { border-color: var(--line) }
-button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
-button:focus-visible, .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-
-.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px }
-.thumb { padding: 0; background: var(--panel); border: 2px solid transparent; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; text-align: left }
-.thumb[aria-current="true"] { border-color: var(--accent) }
-.thumb .ti { aspect-ratio: 1; display: grid; place-items: center; background: repeating-conic-gradient(var(--chk-a) 0 25%, var(--chk-b) 0 50%) 0 0 / 12px 12px }
-.thumb img { max-width: 100%; max-height: 100%; display: block }
-.thumb small { font-family: var(--f-mono); font-size: 9.5px; color: var(--muted); padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-
-.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline }
-.meta h2 { margin: 0; font-size: 1.15rem; font-weight: 600 }
-.meta dl { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
-.meta dt { display: inline; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px }
-.meta dd { display: inline; margin: 0 0 0 4px; color: var(--ink); font-variant-numeric: tabular-nums }
-.nav { margin-left: auto; display: flex; gap: 4px }
-
-.bench { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px }
-.bench.wipe { grid-template-columns: minmax(0, 1fr) }
-@media (max-width: 760px) { .bench { grid-template-columns: minmax(0, 1fr) } }
-.pane { display: flex; flex-direction: column; gap: 4px; min-width: 0 }
-.pane header { padding: 0; display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
-.pane h3 { margin: 0; font-size: 13px; font-weight: 600 }
-.pane header span { font-size: 11.5px; color: var(--muted) }
-.view { position: relative; height: min(70vh, 640px); overflow: auto; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); cursor: grab; touch-action: pan-x pan-y }
-.view.drag { cursor: grabbing }
-.bg-check .view { background: repeating-conic-gradient(var(--chk-a) 0 25%, var(--chk-b) 0 50%) 0 0 / 16px 16px }
-.bg-black .view { background: #000 }
-.bg-white .view { background: #fff }
-.stage { position: relative; margin: auto; line-height: 0 }
-.stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none }
-.pixel img, img.pixel { image-rendering: pixelated }
-.stage .top { position: absolute; inset: 0 }
-.handle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); pointer-events: none }
-.wipe-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-.wipe-row input { flex: 1 1 200px }
-.legend { color: var(--muted); font-size: 12.5px; margin: 0 }
-kbd { font-family: var(--f-mono); font-size: 11px; background: var(--chip); border-radius: 4px; padding: 0 4px }
-
-.ingame { display: flex; flex-direction: column; gap: 10px; padding-block: 4px 10px; border-bottom: 1px solid var(--line) }
-.ingame h2 { margin: 0; font-size: 1.15rem; font-weight: 600 }
-.ingame > p { margin: 0; color: var(--muted); max-width: 75ch }
-.shot { position: relative; line-height: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); max-width: 1200px; touch-action: pan-y; user-select: none }
-.shot img { display: block; width: 100%; height: auto; -webkit-user-drag: none }
-.shot .top { position: absolute; inset: 0 }
-.shot .handle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); pointer-events: none }
-.shot .tag { position: absolute; top: 8px; font: 600 11px/1 var(--f-body); letter-spacing: .06em; text-transform: uppercase; padding: 5px 7px; border-radius: 4px; background: rgba(0,0,0,.65); color: #fff; pointer-events: none }
-.shot .tag.l { left: 8px } .shot .tag.r { right: 8px }
-.stats { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
-.stats dt { display: inline; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px }
-.stats dd { display: inline; margin: 0 0 0 4px; color: var(--ink); font-variant-numeric: tabular-nums }
-details.crops summary { cursor: pointer; font-weight: 600; font-size: 13px }
-details.crops img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 6px; border: 1px solid var(--line) }
-.download { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; background: var(--panel) }
-.download a.btn { font-weight: 600; text-decoration: none; background: var(--accent); color: var(--accent-ink); padding: 8px 14px; border-radius: 6px }
-.download a.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
-.download p { margin: 0; color: var(--muted); flex: 1 1 320px; min-width: 0 }
-.download strong { color: var(--ink) }
-</style>
-
 <div class="wrap">
-  <header>
-    <h1>Dereth Texture Bench</h1>
-    <p><strong>HD textures that stay end-of-retail compatible.</strong> Custom dat files lock players into one server; this pack changes only textures, so every end-of-retail server still sees a normal retail client. Install once, play anywhere, nothing for server admins to do.</p>
+
+  <header class="top">
+    <a class="brand" href="./">AC<span>-</span>HD</a>
+    <nav aria-label="Page">
+      <a href="#difference">See the difference</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+    </nav>
   </header>
 
-  <div class="download">
-    <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download HD Textures v1</a>
-    <p><strong>819 MB zip.</strong> Close the game, extract, and run <em>Install HD Textures.bat</em>. Switch back to retail any time with <em>Use Retail Textures.bat</em>. Client-only, so it works on any end-of-retail server. Mirror: <a href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">MEGA</a> &middot; <a href="https://github.com/osteth/ac-texture-upscale">source and docs</a></p>
-  </div>
-
-  <section class="ingame" aria-labelledby="ig-title">
-    <h2 id="ig-title">In game: the starting room</h2>
-    <p>Every texture in the new-character starting dungeon (landblock 7F03), the NPCs and objects placed there, and the character's starter clothes, upscaled with the detailed model and packed into the client at 2&times;. Same spot, same camera. Drag across the image to wipe between them.</p>
-    <dl class="stats">
-      <div><dt>Textures</dt><dd>536</dd></div>
-      <div><dt>Model</dt><dd>realesrgan-x4plus &rarr; 2&times;</dd></div>
-      <div><dt>GPU time</dt><dd>~0.2 s/texture (RTX 3090 + RTX A4500)</dd></div>
-      <div><dt>Client memory</dt><dd>~520 MB &rarr; ~589 MB</dd></div>
-      <div><dt>Rendering errors</dt><dd>none seen</dd></div>
-    </dl>
-    <div class="shot">
-      <img src="img/ingame_startroom_after.webp" alt="Starting room with upscaled textures" width="1918" height="1199">
-      <img class="top" src="img/ingame_startroom_before.webp" alt="Starting room with original retail textures" width="1918" height="1199">
-      <div class="handle"></div>
-      <span class="tag l">Retail</span><span class="tag r">2&times; detailed</span>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">HD textures for Asheron's Call</p>
+    <h1 id="hero-title">Dereth, <em>sharper</em>.<br>Every server, still.</h1>
+    <p class="sub">Every creature, suit of armor, building, dungeon and blade of grass at twice the resolution. It's built to stay <strong>end-of-retail compatible</strong>, so it works on every end-of-retail server you already play on.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download AC-HD <small>v1.0 &middot; 819 MB</small></a>
+      <a class="ghost" href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">Mirror on MEGA</a>
+      <p class="cta-note">Windows &middot; free &middot; one-click install and uninstall</p>
     </div>
-    <input class="shot-wipe" id="wipe-room" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled starting room" style="max-width:1200px">
-    <details class="crops">
-      <summary>Close-ups: map, rug, floor, bookcase, wall trim</summary>
-      <img src="img/ingame_startroom_crops.webp" alt="Before and after close-ups of the framed map, rug, stone floor, bookcase and wall trim" width="1292" height="2338" loading="lazy">
-    </details>
+    <figure class="frame" style="margin:0">
+      <div class="shot" data-start="55">
+        <img src="img/ingame_startroom_after.webp" alt="The starter dungeon with AC-HD textures" width="1918" height="1199">
+        <img class="top-img" src="img/ingame_startroom_before.webp" alt="The starter dungeon with original textures" width="1918" height="1199">
+        <div class="handle"></div>
+        <span class="tag l">Original</span><span class="tag r">AC-HD</span>
+      </div>
+      <figcaption class="caption"><span>Drag across the picture to compare.</span><span>The new-character starter dungeon, same spot, same camera.</span></figcaption>
+    </figure>
   </section>
 
-  <section class="ingame" aria-labelledby="og-title">
-    <h2 id="og-title">In game: outdoors, with terrain</h2>
-    <p>The full pack: every texture on 3D models at 2&times;, plus the ground. Ground textures are blended on the CPU at a fixed tile size, so they needed uncompressed 2&times; textures, 2&times; blend masks and a 2048 px terrain tile. Daytime, 17.4N 63.2E, same camera.</p>
-    <dl class="stats">
-      <div><dt>Textures</dt><dd>9,465 + 24 blend masks</dd></div>
-      <div><dt>Terrain tile</dt><dd>1024 &rarr; 2048 px</dd></div>
-      <div><dt>Address space here</dt><dd>1,171 MB &rarr; 1,564 MB of 4,096</dd></div>
-      <div><dt>Dat sizes</dt><dd>portal 1.65 GB, highres 0.48 GB</dd></div>
-    </dl>
-    <div class="shot">
-      <img src="img/ingame_outdoor_after.webp" alt="Outdoors with upscaled textures and terrain" width="1919" height="1201">
-      <img class="top" src="img/ingame_outdoor_before.webp" alt="Outdoors with original retail textures" width="1919" height="1201">
-      <div class="handle"></div>
-      <span class="tag l">Retail</span><span class="tag r">2&times; + terrain</span>
+  <section aria-labelledby="why-title">
+    <p class="eyebrow">Why it's different</p>
+    <h2 id="why-title">A graphics upgrade that doesn't cost you a server</h2>
+    <div class="problem">
+      <p>Servers have tried custom dat files before. But once you install one server's files, you have to swap back to the end-of-retail files to play anywhere else. So nearly every server sticks to end of retail, and Asheron's Call has looked the same for over twenty years.</p>
     </div>
-    <input class="shot-wipe" id="wipe-outdoor" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled outdoor scene" style="max-width:1200px">
-    <details class="crops">
-      <summary>Close-ups: grass near and far, houses, timber building</summary>
-      <img src="img/ingame_outdoor_crops.webp" alt="Before and after close-ups of grass, distant houses and a timber building" width="1292" height="1502" loading="lazy">
-    </details>
+    <div class="promises">
+      <div class="promise">
+        <h3>Works on every end-of-retail server</h3>
+        <p>AC-HD only touches textures. Version numbers and all gameplay data stay exactly end of retail, so servers see a normal retail client.</p>
+      </div>
+      <div class="promise">
+        <h3>Nothing for server admins to do</h3>
+        <p>It's entirely on your PC. Servers need no changes, no patches and no permission, and nothing changes for other players.</p>
+      </div>
+      <div class="promise">
+        <h3>Switch back in a second</h3>
+        <p>Two buttons swap between AC-HD and the original textures instantly. Uninstalling puts your original files back.</p>
+      </div>
+    </div>
   </section>
 
-  <section class="ingame" aria-labelledby="tg-title">
-    <h2 id="tg-title">In game: desert town</h2>
-    <p>Same full pack in a busier spot: an NPC in chain armor, the Salvaging Forge, adobe buildings and a fountain. Colors stay true to retail in daylight; the gains are sharper armor, stonework and plaster. Daytime, 21.5S 1.7W, same camera.</p>
-    <dl class="stats">
-      <div><dt>Address space here</dt><dd>1,546 MB of 4,096</dd></div>
-      <div><dt>Pack</dt><dd>v1.0</dd></div>
-    </dl>
-    <div class="shot">
-      <img src="img/ingame_town_after.webp" alt="Desert town with upscaled textures and terrain" width="1917" height="1199">
-      <img class="top" src="img/ingame_town_before.webp" alt="Desert town with original retail textures" width="1917" height="1199">
-      <div class="handle"></div>
-      <span class="tag l">Retail</span><span class="tag r">2&times; + terrain</span>
+  <section id="difference" aria-labelledby="diff-title">
+    <p class="eyebrow">See the difference</p>
+    <h2 id="diff-title">Same places, same camera</h2>
+    <p class="lede">Real in-game screenshots, taken before and after installing. Drag across each one.</p>
+    <div class="compares">
+      <article class="compare">
+        <h3>A desert town</h3>
+        <p>Chainmail you can count the links in, a forge with real stonework, and plaster you can see on the adobe walls.</p>
+        <div class="frame">
+          <div class="shot" data-start="50">
+            <img src="img/ingame_town_after.webp" alt="Desert town with AC-HD" width="1917" height="1199" loading="lazy">
+            <img class="top-img" src="img/ingame_town_before.webp" alt="Desert town, original textures" width="1917" height="1199" loading="lazy">
+            <div class="handle"></div><span class="tag l">Original</span><span class="tag r">AC-HD</span>
+          </div>
+        </div>
+        <details class="zoom"><summary>Close-ups</summary><img src="img/ingame_town_crops.webp" alt="Close-ups of the armored NPC, fountain, buildings and ground, original vs AC-HD" width="1252" height="1613" loading="lazy"></details>
+      </article>
+      <article class="compare">
+        <h3>The open world</h3>
+        <p>The ground is upgraded too: individual grass clumps instead of a smear, all the way to the horizon, plus sharper roof slates and timber.</p>
+        <div class="frame">
+          <div class="shot" data-start="50">
+            <img src="img/ingame_outdoor_after.webp" alt="Outdoors with AC-HD" width="1919" height="1201" loading="lazy">
+            <img class="top-img" src="img/ingame_outdoor_before.webp" alt="Outdoors, original textures" width="1919" height="1201" loading="lazy">
+            <div class="handle"></div><span class="tag l">Original</span><span class="tag r">AC-HD</span>
+          </div>
+        </div>
+        <details class="zoom"><summary>Close-ups</summary><img src="img/ingame_outdoor_crops.webp" alt="Close-ups of grass, houses and a timber building, original vs AC-HD" width="1292" height="1502" loading="lazy"></details>
+      </article>
+      <article class="compare">
+        <h3>Up close in the starter dungeon</h3>
+        <p>Where the upgrade is easiest to see: the map's coastlines and labels, the rug's pattern, every crack in the floor.</p>
+        <img src="img/ingame_startroom_crops.webp" alt="Close-ups of the framed map, rug, floor, bookcase and wall trim, original vs AC-HD" width="1292" height="2338" loading="lazy" style="border-radius:6px;border:1px solid var(--line)">
+      </article>
     </div>
-    <input class="shot-wipe" id="wipe-town" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled desert town" style="max-width:1200px">
-    <details class="crops">
-      <summary>Close-ups: Pathwarden and forge, fountain, adobe buildings, ground</summary>
-      <img src="img/ingame_town_crops.webp" alt="Before and after close-ups of an armored NPC and forge, a fountain, adobe buildings and the ground" width="1252" height="1613" loading="lazy">
-    </details>
   </section>
 
-  <section class="ingame" aria-labelledby="bench-title" style="border-bottom: 0; padding-block: 8px 0">
-    <h2 id="bench-title">Texture by texture</h2>
-    <p>40 textures from the end-of-retail <code>client_portal.dat</code> and <code>client_highres.dat</code>, each shown as the original pixels next to two Real-ESRGAN upscales at 2&times;. The release uses the detailed model.</p>
+  <section aria-labelledby="what-title">
+    <p class="eyebrow">What's upgraded</p>
+    <h2 id="what-title">Everything you look at in the world</h2>
+    <div class="stats">
+      <div class="stat"><b>9,465</b><span>textures upgraded</span></div>
+      <div class="stat"><b>2&times;</b><span>resolution, 4&times; the pixels</span></div>
+      <div class="stat"><b>0</b><span>server changes needed</span></div>
+      <div class="stat"><b>1 click</b><span>to switch back</span></div>
+    </div>
+    <ul class="list">
+      <li>Creatures and NPCs</li>
+      <li>Armor and clothing, with dyes and color variants still working</li>
+      <li>Weapons, shields and items</li>
+      <li>Buildings, towns and dungeons</li>
+      <li>Trees, plants and scenery</li>
+      <li>The outdoor ground: grass, dirt, roads and stone</li>
+      <li class="no">Interface and item icons stay as they are</li>
+    </ul>
   </section>
 
-  <div class="bar" id="bar">
-    <div class="group" role="group" aria-label="Filter by format"><span>Format</span><span id="fmts"></span></div>
-    <div class="group" role="group" aria-label="View mode"><span>View</span>
-      <button id="m-side" aria-pressed="true">Side by side</button>
-      <button id="m-wipe" aria-pressed="false">Wipe</button>
-    </div>
-    <div class="group" role="group" aria-label="Zoom"><span>Zoom</span>
-      <button data-zoom="fit" aria-pressed="true">Fit</button>
-      <button data-zoom="1" aria-pressed="false">1&times;</button>
-      <button data-zoom="2" aria-pressed="false">2&times;</button>
-      <button data-zoom="4" aria-pressed="false">4&times;</button>
-    </div>
-    <div class="group" role="group" aria-label="Background"><span>Backdrop</span>
-      <button data-bg="check" aria-pressed="true">Checker</button>
-      <button data-bg="black" aria-pressed="false">Black</button>
-      <button data-bg="white" aria-pressed="false">White</button>
-    </div>
-  </div>
+  <section id="install" aria-labelledby="install-title">
+    <p class="eyebrow">Install</p>
+    <h2 id="install-title">Three steps, about a minute</h2>
+    <ol class="steps">
+      <li><b>Close Asheron's Call</b> and ThwargLauncher (check the system tray).</li>
+      <li><b>Extract the zip</b> anywhere, for example your Downloads folder.</li>
+      <li><b>Double-click <code>Install HD Textures.bat</code>.</b> Your original files are kept, and switching is instant from then on.</li>
+    </ol>
+    <p class="lede">To switch, double-click <code>Use Retail Textures.bat</code> or <code>Use HD Textures.bat</code>. To remove AC-HD completely, use <code>Uninstall HD Textures.bat</code>. If your game isn't in <code>C:\Turbine\Asheron's Call</code>, the included README shows the one-line command for other folders.</p>
+  </section>
 
-  <div class="strip" id="strip"></div>
+  <section id="faq" aria-labelledby="faq-title">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-title">FAQ</h2>
+    <div class="faq">
+      <details><summary>Can I still play on other servers?</summary><p>Yes, on any server that runs the end-of-retail game files, which is nearly all of them. AC-HD keeps every version number and all gameplay data identical to end of retail. Servers that ship their own custom files still need their own files.</p></details>
+      <details><summary>Does the server need to install anything?</summary><p>No. Everything happens on your PC. Server admins don't need to do anything, and other players see no difference.</p></details>
+      <details><summary>Does it change gameplay?</summary><p>No. Only how textures look. Items, creatures, spells, maps and everything else the game logic uses are untouched.</p></details>
+      <details><summary>Will it slow my game down?</summary><p>Areas take a moment longer to load the first time you visit them, and the game uses more memory: about 1.6 GB in busy outdoor areas, compared with about 1.2 GB. That's well within what the client can use (4 GB).</p></details>
+      <details><summary>How do I go back to the original look?</summary><p>Double-click <em>Use Retail Textures.bat</em> (instant), or <em>Uninstall HD Textures.bat</em> to remove AC-HD and restore your original files.</p></details>
+      <details><summary>Is it safe? What does it change on my PC?</summary><p>It only swaps two files in your Asheron's Call folder: <code>client_portal.dat</code> and <code>client_highres.dat</code>. Your originals are kept next to them. The download includes SHA-256 checksums, and the installer checks them. The scripts are plain text you can read, and the full source is on GitHub.</p></details>
+      <details><summary>How was it made?</summary><p>Each texture was upscaled with the Real-ESRGAN AI model, color-corrected against the original, and packed back into the game's own formats. The outdoor ground needed special handling to fit the client's terrain blending. The whole process is documented on GitHub.</p></details>
+      <details><summary>I had a crash. What should I do?</summary><p>Switch to retail textures and see whether it happens again. If it only happens with AC-HD, report where you were and what you were doing on the GitHub issues page. Rare crashes when portaling into very busy towns also happen on the original textures.</p></details>
+    </div>
+  </section>
 
-  <div class="meta">
-    <h2 id="t-name"></h2>
-    <dl id="t-dl"></dl>
-    <div class="nav"><button id="prev" aria-label="Previous texture">&larr; Prev</button><button id="next" aria-label="Next texture">Next &rarr;</button></div>
-  </div>
+  <section class="closing" aria-labelledby="close-title">
+    <h2 id="close-title">See Dereth the way you remember it</h2>
+    <p>Free, end-of-retail compatible, and one click to undo.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download AC-HD <small>v1.0 &middot; 819 MB</small></a>
+      <a class="ghost" href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">Mirror on MEGA</a>
+    </div>
+  </section>
 
-  <div class="bench bg-check" id="bench"></div>
-  <p class="legend">Zoom is relative to the 2&times; output, so 1&times; shows each upscaled pixel at screen size. Drag any panel to pan; the others follow. <kbd>&larr;</kbd> <kbd>&rarr;</kbd> step through textures.</p>
+  <footer>
+    <span>AC-HD v1.0 &middot; a fan project for Asheron's Call emulator servers</span>
+    <nav aria-label="More">
+      <a href="bench.html">Texture-by-texture comparison</a>
+      <a href="https://github.com/osteth/ac-texture-upscale">Source on GitHub</a>
+      <a href="https://github.com/osteth/ac-texture-upscale/blob/main/docs/LESSONS-LEARNED.md">How it was made</a>
+      <a href="https://github.com/osteth/ac-texture-upscale/issues">Report a problem</a>
+    </nav>
+  </footer>
 </div>
 
 <script>
-const ITEMS = [
- ["portal_R8G8B8_06000261","World map of Dereth"],["portal_R8G8B8_0600647C","Gold armor panel"],["portal_R8G8B8_06006753","Striped banner with green cross"],["portal_R8G8B8_06006F7B","Cloth / parchment"],
- ["portal_DXT5_06003789","Bark strip and leafy tree"],["portal_DXT5_060043ED","Dry grass plant"],["portal_DXT5_06005DDE","Leafy tree"],["portal_DXT5_06006270","Bat wing"],
- ["portal_DXT1_0600378B","Grass ground"],["portal_DXT1_06004020","Ivy-covered wall"],["portal_DXT1_06004753","Snow / ice"],["portal_DXT1_060069E0","Red ornamental crest"],
- ["portal_INDEX16_0600378E","Grassy ground (palettized)"],["portal_INDEX16_06004793","Small brown swatch (palettized)"],["portal_INDEX16_060050C0","Leather strap (palettized)"],["portal_INDEX16_06005739","Chainmail (palettized)"],
- ["portal_CUSTOM_LSCAPE_R8G8B8_06003794","Teal ground (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_0600382A","Blue gravel (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_06003839","Dark rock with blue glints (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_06003856","Brown dirt (terrain)"],
- ["portal_A8R8G8B8_060037AF","Cloud mask"],["portal_A8R8G8B8_06004D5C","Pencil sketch illustration"],["portal_A8R8G8B8_060063C6","Studded UI border"],["portal_A8R8G8B8_06006D43","Sand"],
- ["highres_INDEX16_06003797","Butterfly (palettized)"],["highres_INDEX16_06003FD4","Blue drape (palettized)"],["highres_INDEX16_060047C3","Autumn Moon Gardens sign (palettized)"],["highres_INDEX16_06005208","Globe (palettized)"],
- ["highres_DXT1_0600389B","Stone floor tiles"],["highres_DXT1_06003D8C","Purple rock"],["highres_DXT1_060041C1","Wooden door strip"],["highres_DXT1_060044D7","House facade"],
- ["highres_A8R8G8B8_06003CEE","Roots / vines"],["highres_A8R8G8B8_060064EC","Armor plate, left"],["highres_A8R8G8B8_060064EE","Armor plate, right"],
- ["highres_DXT5_06003E9B","Wooden frame"],
- ["highres_R8G8B8_0600649C","Dark sky"],["highres_R8G8B8_060064A2","Dark sky, variant"],["highres_R8G8B8_060065F5","Brown stone tiles"],["highres_R8G8B8_06006D99","Purple UI sheet"]
-];
-const DIMS = {"06000261":[512,512],"0600647C":[128,256],"06006753":[256,256],"06006F7B":[256,256],"06003789":[512,512],"060043ED":[512,512],"06005DDE":[512,512],"06006270":[128,64],"0600378B":[256,256],"06004020":[256,256],"06004753":[128,128],"060069E0":[256,256],"0600378E":[128,128],"06004793":[64,64],"060050C0":[64,128],"06005739":[256,256],"06003794":[256,256],"0600382A":[256,256],"06003839":[256,256],"06003856":[256,256],"060037AF":[256,256],"06004D5C":[427,527],"060063C6":[64,128],"06006D43":[512,512],"06003797":[128,128],"06003FD4":[64,64],"060047C3":[256,128],"06005208":[128,128],"0600389B":[256,256],"06003D8C":[256,256],"060041C1":[64,128],"060044D7":[128,128],"06003CEE":[256,128],"060064EC":[256,256],"060064EE":[256,256],"06003E9B":[128,128],"0600649C":[256,256],"060064A2":[256,256],"060065F5":[256,256],"06006D99":[512,512]};
-
-const items = ITEMS.map(([stem, label]) => {
-  const parts = stem.split("_"), id = parts[parts.length - 1], dat = parts[0];
-  const fmt = parts.slice(1, -1).join("_").replace("CUSTOM_LSCAPE_R8G8B8", "LSCAPE");
-  const [w, h] = DIMS[id];
-  return { stem, label, id, dat, fmt, w, h };
-});
-const PANES = [
-  { key: "orig", title: "Original", note: "nearest-neighbor, no smoothing", pixel: true },
-  { key: "fast", title: "Fast model", note: "realesr-animevideov3 · ~0.5 s/texture" },
-  { key: "x4", title: "Detailed model", note: "realesrgan-x4plus → 2× · ~30 s/texture" }
-];
-const src = (it, key) => `img/${it.stem}_${key}.webp`;
-
-const state = { i: 0, fmt: "All", mode: "side", zoom: "fit", bg: "check", wipeRight: "x4", wipe: 50 };
-try { Object.assign(state, JSON.parse(localStorage.getItem("tb-state") || "{}")); } catch (e) {}
-const save = () => { try { localStorage.setItem("tb-state", JSON.stringify(state)); } catch (e) {} };
-
-const $ = s => document.querySelector(s);
-const visible = () => items.filter(it => state.fmt === "All" || it.fmt === state.fmt);
-
-function renderFormats() {
-  const fmts = ["All", ...new Set(items.map(it => it.fmt))];
-  $("#fmts").innerHTML = "";
-  for (const f of fmts) {
-    const b = document.createElement("button");
-    b.textContent = f; b.setAttribute("aria-pressed", String(state.fmt === f));
-    b.onclick = () => { state.fmt = f; state.i = 0; renderFormats(); renderStrip(); renderBench(); save(); };
-    $("#fmts").append(b);
-  }
-}
-
-function renderStrip() {
-  const strip = $("#strip"); strip.innerHTML = "";
-  visible().forEach((it, n) => {
-    const b = document.createElement("button");
-    b.className = "thumb"; b.setAttribute("aria-current", String(n === state.i)); b.title = it.label;
-    b.innerHTML = `<div class="ti"><img class="pixel" loading="lazy" alt="" src="${src(it, "orig")}"></div><small>${it.fmt} ${it.id}</small>`;
-    b.onclick = () => { state.i = n; renderStrip(); renderBench(); save(); };
-    strip.append(b);
-  });
-}
-
-function stageWidth(it) { return state.zoom === "fit" ? null : it.w * 2 * Number(state.zoom); }
-
-function makeView(it, inner) {
-  const view = document.createElement("div"); view.className = "view";
-  const stage = document.createElement("div"); stage.className = "stage";
-  const w = stageWidth(it);
-  if (w) { stage.style.width = w + "px"; }
-  else { stage.style.width = "100%"; stage.style.maxWidth = `calc((min(70vh, 640px) - 2px) * ${it.w / it.h})`; }
-  stage.append(...inner); view.append(stage); return view;
-}
-
-function renderBench() {
-  const list = visible(); if (!list.length) return;
-  state.i = Math.min(state.i, list.length - 1);
-  const it = list[state.i];
-  $("#t-name").textContent = it.label;
-  $("#t-dl").innerHTML = `<div><dt>ID</dt><dd>0x${it.id}</dd></div><div><dt>Dat</dt><dd>${it.dat}</dd></div><div><dt>Format</dt><dd>${it.fmt}</dd></div><div><dt>Size</dt><dd>${it.w}×${it.h} → ${it.w * 2}×${it.h * 2}</dd></div><div><dt>Item</dt><dd>${state.i + 1} / ${list.length}</dd></div>`;
-  const bench = $("#bench"); bench.innerHTML = "";
-  bench.className = `bench bg-${state.bg}${state.mode === "wipe" ? " wipe" : ""}`;
-  const pixel = state.zoom !== "fit";
-
-  if (state.mode === "side") {
-    for (const p of PANES) {
-      const pane = document.createElement("section"); pane.className = "pane";
-      const img = new Image(); img.alt = `${it.label}, ${p.title}`; img.src = src(it, p.key);
-      if (p.pixel || pixel) img.classList.add("pixel");
-      pane.innerHTML = `<header><h3>${p.title}</h3><span>${p.note}</span></header>`;
-      pane.append(makeView(it, [img])); bench.append(pane);
-    }
-  } else {
-    const right = PANES.find(p => p.key === state.wipeRight);
-    const pane = document.createElement("section"); pane.className = "pane";
-    pane.innerHTML = `<header><h3>Original ← → ${right.title}</h3><span>drag the slider to wipe between them</span></header>`;
-    const base = new Image(); base.alt = `${it.label}, ${right.title}`; base.src = src(it, right.key); if (pixel) base.classList.add("pixel");
-    const top = new Image(); top.alt = `${it.label}, original`; top.src = src(it, "orig"); top.className = "top pixel";
-    const handle = document.createElement("div"); handle.className = "handle";
-    const apply = () => { top.style.clipPath = `inset(0 ${100 - state.wipe}% 0 0)`; handle.style.left = `calc(${state.wipe}% - 1px)`; };
-    apply();
-    pane.append(makeView(it, [base, top, handle]));
-    const row = document.createElement("div"); row.className = "wipe-row";
-    row.innerHTML = `<input id="wipe" type="range" min="0" max="100" value="${state.wipe}" aria-label="Wipe position">`;
-    for (const p of PANES.slice(1)) {
-      const b = document.createElement("button"); b.textContent = `Compare to ${p.title.toLowerCase()}`;
-      b.setAttribute("aria-pressed", String(state.wipeRight === p.key));
-      b.onclick = () => { state.wipeRight = p.key; renderBench(); save(); };
-      row.append(b);
-    }
-    row.querySelector("input").oninput = e => { state.wipe = +e.target.value; apply(); save(); };
-    pane.append(row); bench.append(pane);
-  }
-  wireViews();
-}
-
-// Drag-to-pan with scroll sync across panels.
-function wireViews() {
-  const views = [...document.querySelectorAll(".view")];
-  let syncing = false;
-  views.forEach(v => {
-    v.addEventListener("scroll", () => {
-      if (syncing) return; syncing = true;
-      const fx = v.scrollLeft / Math.max(1, v.scrollWidth - v.clientWidth), fy = v.scrollTop / Math.max(1, v.scrollHeight - v.clientHeight);
-      views.forEach(o => { if (o !== v) { o.scrollLeft = fx * (o.scrollWidth - o.clientWidth); o.scrollTop = fy * (o.scrollHeight - o.clientHeight); } });
-      requestAnimationFrame(() => { syncing = false; });
-    });
-    let sx, sy, sl, st, down = false;
-    v.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; down = true; sx = e.clientX; sy = e.clientY; sl = v.scrollLeft; st = v.scrollTop; v.classList.add("drag"); v.setPointerCapture(e.pointerId); });
-    v.addEventListener("pointermove", e => { if (!down) return; v.scrollLeft = sl - (e.clientX - sx); v.scrollTop = st - (e.clientY - sy); });
-    const up = () => { down = false; v.classList.remove("drag"); };
-    v.addEventListener("pointerup", up); v.addEventListener("pointercancel", up);
-  });
-}
-
-function pressGroup(attr, value) {
-  document.querySelectorAll(`[${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value)));
-}
-document.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => { state.zoom = b.dataset.zoom; pressGroup("data-zoom", state.zoom); renderBench(); save(); });
-document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { state.bg = b.dataset.bg; pressGroup("data-bg", state.bg); $("#bench").className = `bench bg-${state.bg}${state.mode === "wipe" ? " wipe" : ""}`; save(); });
-const setMode = m => { state.mode = m; $("#m-side").setAttribute("aria-pressed", String(m === "side")); $("#m-wipe").setAttribute("aria-pressed", String(m === "wipe")); renderBench(); save(); };
-$("#m-side").onclick = () => setMode("side");
-$("#m-wipe").onclick = () => setMode("wipe");
-const step = d => { const n = visible().length; state.i = (state.i + d + n) % n; renderStrip(); renderBench(); save(); };
-$("#prev").onclick = () => step(-1);
-$("#next").onclick = () => step(1);
-document.addEventListener("keydown", e => {
-  if (e.target.tagName === "INPUT") return;
-  if (e.key === "ArrowRight") step(1);
-  if (e.key === "ArrowLeft") step(-1);
-});
-
-// In-game screenshot wipes: each .shot is followed by its range input; drag the image or the slider.
+// Drag-to-compare: pointer drag, keyboard (arrows) and click-to-jump on every .shot.
 document.querySelectorAll(".shot").forEach(shot => {
-  const top = shot.querySelector(".top"), handle = shot.querySelector(".handle"), range = shot.nextElementSibling;
-  const set = pct => { pct = Math.max(0, Math.min(100, pct)); top.style.clipPath = `inset(0 ${100 - pct}% 0 0)`; handle.style.left = `calc(${pct}% - 1px)`; range.value = pct; };
-  range.oninput = e => set(+e.target.value);
-  let down = false;
+  const top = shot.querySelector(".top-img"), handle = shot.querySelector(".handle");
+  shot.tabIndex = 0;
+  shot.setAttribute("role", "slider");
+  shot.setAttribute("aria-label", "Compare original and AC-HD textures");
+  shot.setAttribute("aria-valuemin", "0"); shot.setAttribute("aria-valuemax", "100");
+  let pct = Number(shot.dataset.start || 50);
+  const set = v => {
+    pct = Math.max(0, Math.min(100, v));
+    top.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    handle.style.left = pct + "%";
+    shot.setAttribute("aria-valuenow", String(Math.round(pct)));
+  };
   const fromEvent = e => { const r = shot.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100); };
+  let down = false;
   shot.addEventListener("pointerdown", e => { down = true; shot.setPointerCapture(e.pointerId); fromEvent(e); });
   shot.addEventListener("pointermove", e => { if (down) fromEvent(e); });
   shot.addEventListener("pointerup", () => { down = false; });
   shot.addEventListener("pointercancel", () => { down = false; });
-  set(50);
+  shot.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") { set(pct - 5); e.preventDefault(); }
+    if (e.key === "ArrowRight") { set(pct + 5); e.preventDefault(); }
+  });
+  set(pct);
 });
-
-pressGroup("data-zoom", state.zoom); pressGroup("data-bg", state.bg);
-renderFormats(); renderStrip(); setMode(state.mode);
 </script>
-
 </body>
 </html>

@@ -21,13 +21,13 @@ with an installer and an instant HD/retail switch ([`release/`](release)).
 
 **Download v1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.0) ·
 [MEGA mirror](https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4) (819 MB) ·
-**Interactive comparison:** [osteth.github.io/ac-texture-upscale](https://osteth.github.io/ac-texture-upscale/)
+**AC-HD site:** [osteth.github.io/ac-texture-upscale](https://osteth.github.io/ac-texture-upscale/)
 
 ## Before / after
 
 Same spot, same camera, retail on the left and v1 on the right. The
-[interactive page](https://osteth.github.io/ac-texture-upscale/) has wipe sliders over the full screenshots, plus a
-40-texture model comparison.
+[AC-HD site](https://osteth.github.io/ac-texture-upscale/) has drag-to-compare screenshots, and the
+[texture bench](https://osteth.github.io/ac-texture-upscale/bench.html) compares 40 textures model by model.
 
 **Starter dungeon:** framed map, rug, stone floor, bookcase, wall trim
 
