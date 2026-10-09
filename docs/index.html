@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Asheron's Call HD textures: retail vs 2x Real-ESRGAN upscale, in game and texture by texture.">
+<title>Dereth Texture Bench</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Archivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky toolbar, filmstrip of all 40 test textures, then a three-up (or wipe) inspection bench with synced pan/zoom. */
+:root {
+  --bg: #eceef0; --panel: #f8f9fa; --ink: #1c2126; --muted: #5d6670; --line: #cfd4d9;
+  --accent: #8a5a12; --accent-ink: #ffffff; --chip: #e1e5e9;
+  --chk-a: #b9bec4; --chk-b: #d9dde1;
+  --f-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --f-body: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15181b; --panel: #1d2125; --ink: #e6e9ec; --muted: #9aa3ad; --line: #30363c;
+  --accent: #d9a650; --accent-ink: #1a1408; --chip: #272c31; --chk-a: #2b3035; --chk-b: #3a4047; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #15181b; --panel: #1d2125; --ink: #e6e9ec; --muted: #9aa3ad; --line: #30363c;
+  --accent: #d9a650; --accent-ink: #1a1408; --chip: #272c31; --chk-a: #2b3035; --chk-b: #3a4047; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; padding-inline: 16px; padding-block: 0 32px }
+.wrap { max-width: 1500px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px }
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; padding-top: 18px }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: 1.55rem; letter-spacing: .04em; margin: 0; text-wrap: balance }
+header p { margin: 0; color: var(--muted); max-width: 70ch }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 8px;
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; border-bottom: 1px solid var(--line) }
+.group { display: flex; flex-wrap: wrap; align-items: center; gap: 4px }
+.group > span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 4px }
+button { font: inherit; font-size: 13px; color: var(--ink); background: var(--chip); border: 1px solid transparent; border-radius: 6px; padding: 4px 10px; cursor: pointer }
+button:hover { border-color: var(--line) }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+button:focus-visible, .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px }
+.thumb { padding: 0; background: var(--panel); border: 2px solid transparent; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; text-align: left }
+.thumb[aria-current="true"] { border-color: var(--accent) }
+.thumb .ti { aspect-ratio: 1; display: grid; place-items: center; background: repeating-conic-gradient(var(--chk-a) 0 25%, var(--chk-b) 0 50%) 0 0 / 12px 12px }
+.thumb img { max-width: 100%; max-height: 100%; display: block }
+.thumb small { font-family: var(--f-mono); font-size: 9.5px; color: var(--muted); padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline }
+.meta h2 { margin: 0; font-size: 1.15rem; font-weight: 600 }
+.meta dl { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
+.meta dt { display: inline; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px }
+.meta dd { display: inline; margin: 0 0 0 4px; color: var(--ink); font-variant-numeric: tabular-nums }
+.nav { margin-left: auto; display: flex; gap: 4px }
+
+.bench { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px }
+.bench.wipe { grid-template-columns: minmax(0, 1fr) }
+@media (max-width: 760px) { .bench { grid-template-columns: minmax(0, 1fr) } }
+.pane { display: flex; flex-direction: column; gap: 4px; min-width: 0 }
+.pane header { padding: 0; display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
+.pane h3 { margin: 0; font-size: 13px; font-weight: 600 }
+.pane header span { font-size: 11.5px; color: var(--muted) }
+.view { position: relative; height: min(70vh, 640px); overflow: auto; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); cursor: grab; touch-action: pan-x pan-y }
+.view.drag { cursor: grabbing }
+.bg-check .view { background: repeating-conic-gradient(var(--chk-a) 0 25%, var(--chk-b) 0 50%) 0 0 / 16px 16px }
+.bg-black .view { background: #000 }
+.bg-white .view { background: #fff }
+.stage { position: relative; margin: auto; line-height: 0 }
+.stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none }
+.pixel img, img.pixel { image-rendering: pixelated }
+.stage .top { position: absolute; inset: 0 }
+.handle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); pointer-events: none }
+.wipe-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.wipe-row input { flex: 1 1 200px }
+.legend { color: var(--muted); font-size: 12.5px; margin: 0 }
+kbd { font-family: var(--f-mono); font-size: 11px; background: var(--chip); border-radius: 4px; padding: 0 4px }
+
+.ingame { display: flex; flex-direction: column; gap: 10px; padding-block: 4px 10px; border-bottom: 1px solid var(--line) }
+.ingame h2 { margin: 0; font-size: 1.15rem; font-weight: 600 }
+.ingame > p { margin: 0; color: var(--muted); max-width: 75ch }
+.shot { position: relative; line-height: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); max-width: 1200px; touch-action: pan-y; user-select: none }
+.shot img { display: block; width: 100%; height: auto; -webkit-user-drag: none }
+.shot .top { position: absolute; inset: 0 }
+.shot .handle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); pointer-events: none }
+.shot .tag { position: absolute; top: 8px; font: 600 11px/1 var(--f-body); letter-spacing: .06em; text-transform: uppercase; padding: 5px 7px; border-radius: 4px; background: rgba(0,0,0,.65); color: #fff; pointer-events: none }
+.shot .tag.l { left: 8px } .shot .tag.r { right: 8px }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--muted) }
+.stats dt { display: inline; text-transform: uppercase; letter-spacing: .06em; font-size: 10.5px }
+.stats dd { display: inline; margin: 0 0 0 4px; color: var(--ink); font-variant-numeric: tabular-nums }
+details.crops summary { cursor: pointer; font-weight: 600; font-size: 13px }
+details.crops img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 6px; border: 1px solid var(--line) }
+.download { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; background: var(--panel) }
+.download a.btn { font-weight: 600; text-decoration: none; background: var(--accent); color: var(--accent-ink); padding: 8px 14px; border-radius: 6px }
+.download a.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+.download p { margin: 0; color: var(--muted); flex: 1 1 320px; min-width: 0 }
+.download strong { color: var(--ink) }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Dereth Texture Bench</h1>
+    <p>40 textures pulled from the end-of-retail <code>client_portal.dat</code> and <code>client_highres.dat</code>, each shown as the original pixels next to two Real-ESRGAN upscales at 2&times;.</p>
+  </header>
+
+  <div class="download">
+    <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download HD Textures v1</a>
+    <p><strong>819 MB zip.</strong> Close the game, extract, and run <em>Install HD Textures.bat</em>. Switch back to retail any time with <em>Use Retail Textures.bat</em>. Client-only, so it works on any end-of-retail server. Mirror: <a href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">MEGA</a> &middot; <a href="https://github.com/osteth/ac-texture-upscale">source and docs</a></p>
+  </div>
+
+  <section class="ingame" aria-labelledby="ig-title">
+    <h2 id="ig-title">In game: the starting room</h2>
+    <p>Every texture in the new-character starting dungeon (landblock 7F03), the NPCs and objects placed there, and the character's starter clothes, upscaled with the detailed model and packed into the client at 2&times;. Same spot, same camera. Drag across the image to wipe between them.</p>
+    <dl class="stats">
+      <div><dt>Textures</dt><dd>536</dd></div>
+      <div><dt>Model</dt><dd>realesrgan-x4plus &rarr; 2&times;</dd></div>
+      <div><dt>GPU time</dt><dd>~0.2 s/texture (RTX 3090 + RTX A4500)</dd></div>
+      <div><dt>Client memory</dt><dd>~520 MB &rarr; ~589 MB</dd></div>
+      <div><dt>Rendering errors</dt><dd>none seen</dd></div>
+    </dl>
+    <div class="shot">
+      <img src="img/ingame_startroom_after.webp" alt="Starting room with upscaled textures" width="1918" height="1199">
+      <img class="top" src="img/ingame_startroom_before.webp" alt="Starting room with original retail textures" width="1918" height="1199">
+      <div class="handle"></div>
+      <span class="tag l">Retail</span><span class="tag r">2&times; detailed</span>
+    </div>
+    <input class="shot-wipe" id="wipe-room" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled starting room" style="max-width:1200px">
+    <details class="crops">
+      <summary>Close-ups: map, rug, floor, bookcase, wall trim</summary>
+      <img src="img/ingame_startroom_crops.webp" alt="Before and after close-ups of the framed map, rug, stone floor, bookcase and wall trim" width="1292" height="2338" loading="lazy">
+    </details>
+  </section>
+
+  <section class="ingame" aria-labelledby="og-title">
+    <h2 id="og-title">In game: outdoors, with terrain</h2>
+    <p>The full pack: every texture on 3D models at 2&times;, plus the ground. Ground textures are blended on the CPU at a fixed tile size, so they needed uncompressed 2&times; textures, 2&times; blend masks and a 2048 px terrain tile. Daytime, 17.4N 63.2E, same camera.</p>
+    <dl class="stats">
+      <div><dt>Textures</dt><dd>9,465 + 24 blend masks</dd></div>
+      <div><dt>Terrain tile</dt><dd>1024 &rarr; 2048 px</dd></div>
+      <div><dt>Address space here</dt><dd>1,171 MB &rarr; 1,564 MB of 4,096</dd></div>
+      <div><dt>Dat sizes</dt><dd>portal 1.65 GB, highres 0.48 GB</dd></div>
+    </dl>
+    <div class="shot">
+      <img src="img/ingame_outdoor_after.webp" alt="Outdoors with upscaled textures and terrain" width="1919" height="1201">
+      <img class="top" src="img/ingame_outdoor_before.webp" alt="Outdoors with original retail textures" width="1919" height="1201">
+      <div class="handle"></div>
+      <span class="tag l">Retail</span><span class="tag r">2&times; + terrain</span>
+    </div>
+    <input class="shot-wipe" id="wipe-outdoor" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled outdoor scene" style="max-width:1200px">
+    <details class="crops">
+      <summary>Close-ups: grass near and far, houses, timber building</summary>
+      <img src="img/ingame_outdoor_crops.webp" alt="Before and after close-ups of grass, distant houses and a timber building" width="1292" height="1502" loading="lazy">
+    </details>
+  </section>
+
+  <section class="ingame" aria-labelledby="tg-title">
+    <h2 id="tg-title">In game: desert town</h2>
+    <p>Same full pack in a busier spot: an NPC in chain armor, the Salvaging Forge, adobe buildings and a fountain. Colors stay true to retail in daylight; the gains are sharper armor, stonework and plaster. Daytime, 21.5S 1.7W, same camera.</p>
+    <dl class="stats">
+      <div><dt>Address space here</dt><dd>1,546 MB of 4,096</dd></div>
+      <div><dt>Pack</dt><dd>v1.0</dd></div>
+    </dl>
+    <div class="shot">
+      <img src="img/ingame_town_after.webp" alt="Desert town with upscaled textures and terrain" width="1917" height="1199">
+      <img class="top" src="img/ingame_town_before.webp" alt="Desert town with original retail textures" width="1917" height="1199">
+      <div class="handle"></div>
+      <span class="tag l">Retail</span><span class="tag r">2&times; + terrain</span>
+    </div>
+    <input class="shot-wipe" id="wipe-town" type="range" min="0" max="100" value="50" aria-label="Wipe between retail and upscaled desert town" style="max-width:1200px">
+    <details class="crops">
+      <summary>Close-ups: Pathwarden and forge, fountain, adobe buildings, ground</summary>
+      <img src="img/ingame_town_crops.webp" alt="Before and after close-ups of an armored NPC and forge, a fountain, adobe buildings and the ground" width="1252" height="1613" loading="lazy">
+    </details>
+  </section>
+
+  <div class="bar" id="bar">
+    <div class="group" role="group" aria-label="Filter by format"><span>Format</span><span id="fmts"></span></div>
+    <div class="group" role="group" aria-label="View mode"><span>View</span>
+      <button id="m-side" aria-pressed="true">Side by side</button>
+      <button id="m-wipe" aria-pressed="false">Wipe</button>
+    </div>
+    <div class="group" role="group" aria-label="Zoom"><span>Zoom</span>
+      <button data-zoom="fit" aria-pressed="true">Fit</button>
+      <button data-zoom="1" aria-pressed="false">1&times;</button>
+      <button data-zoom="2" aria-pressed="false">2&times;</button>
+      <button data-zoom="4" aria-pressed="false">4&times;</button>
+    </div>
+    <div class="group" role="group" aria-label="Background"><span>Backdrop</span>
+      <button data-bg="check" aria-pressed="true">Checker</button>
+      <button data-bg="black" aria-pressed="false">Black</button>
+      <button data-bg="white" aria-pressed="false">White</button>
+    </div>
+  </div>
+
+  <div class="strip" id="strip"></div>
+
+  <div class="meta">
+    <h2 id="t-name"></h2>
+    <dl id="t-dl"></dl>
+    <div class="nav"><button id="prev" aria-label="Previous texture">&larr; Prev</button><button id="next" aria-label="Next texture">Next &rarr;</button></div>
+  </div>
+
+  <div class="bench bg-check" id="bench"></div>
+  <p class="legend">Zoom is relative to the 2&times; output, so 1&times; shows each upscaled pixel at screen size. Drag any panel to pan; the others follow. <kbd>&larr;</kbd> <kbd>&rarr;</kbd> step through textures.</p>
+</div>
+
+<script>
+const ITEMS = [
+ ["portal_R8G8B8_06000261","World map of Dereth"],["portal_R8G8B8_0600647C","Gold armor panel"],["portal_R8G8B8_06006753","Striped banner with green cross"],["portal_R8G8B8_06006F7B","Cloth / parchment"],
+ ["portal_DXT5_06003789","Bark strip and leafy tree"],["portal_DXT5_060043ED","Dry grass plant"],["portal_DXT5_06005DDE","Leafy tree"],["portal_DXT5_06006270","Bat wing"],
+ ["portal_DXT1_0600378B","Grass ground"],["portal_DXT1_06004020","Ivy-covered wall"],["portal_DXT1_06004753","Snow / ice"],["portal_DXT1_060069E0","Red ornamental crest"],
+ ["portal_INDEX16_0600378E","Grassy ground (palettized)"],["portal_INDEX16_06004793","Small brown swatch (palettized)"],["portal_INDEX16_060050C0","Leather strap (palettized)"],["portal_INDEX16_06005739","Chainmail (palettized)"],
+ ["portal_CUSTOM_LSCAPE_R8G8B8_06003794","Teal ground (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_0600382A","Blue gravel (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_06003839","Dark rock with blue glints (terrain)"],["portal_CUSTOM_LSCAPE_R8G8B8_06003856","Brown dirt (terrain)"],
+ ["portal_A8R8G8B8_060037AF","Cloud mask"],["portal_A8R8G8B8_06004D5C","Pencil sketch illustration"],["portal_A8R8G8B8_060063C6","Studded UI border"],["portal_A8R8G8B8_06006D43","Sand"],
+ ["highres_INDEX16_06003797","Butterfly (palettized)"],["highres_INDEX16_06003FD4","Blue drape (palettized)"],["highres_INDEX16_060047C3","Autumn Moon Gardens sign (palettized)"],["highres_INDEX16_06005208","Globe (palettized)"],
+ ["highres_DXT1_0600389B","Stone floor tiles"],["highres_DXT1_06003D8C","Purple rock"],["highres_DXT1_060041C1","Wooden door strip"],["highres_DXT1_060044D7","House facade"],
+ ["highres_A8R8G8B8_06003CEE","Roots / vines"],["highres_A8R8G8B8_060064EC","Armor plate, left"],["highres_A8R8G8B8_060064EE","Armor plate, right"],
+ ["highres_DXT5_06003E9B","Wooden frame"],
+ ["highres_R8G8B8_0600649C","Dark sky"],["highres_R8G8B8_060064A2","Dark sky, variant"],["highres_R8G8B8_060065F5","Brown stone tiles"],["highres_R8G8B8_06006D99","Purple UI sheet"]
+];
+const DIMS = {"06000261":[512,512],"0600647C":[128,256],"06006753":[256,256],"06006F7B":[256,256],"06003789":[512,512],"060043ED":[512,512],"06005DDE":[512,512],"06006270":[128,64],"0600378B":[256,256],"06004020":[256,256],"06004753":[128,128],"060069E0":[256,256],"0600378E":[128,128],"06004793":[64,64],"060050C0":[64,128],"06005739":[256,256],"06003794":[256,256],"0600382A":[256,256],"06003839":[256,256],"06003856":[256,256],"060037AF":[256,256],"06004D5C":[427,527],"060063C6":[64,128],"06006D43":[512,512],"06003797":[128,128],"06003FD4":[64,64],"060047C3":[256,128],"06005208":[128,128],"0600389B":[256,256],"06003D8C":[256,256],"060041C1":[64,128],"060044D7":[128,128],"06003CEE":[256,128],"060064EC":[256,256],"060064EE":[256,256],"06003E9B":[128,128],"0600649C":[256,256],"060064A2":[256,256],"060065F5":[256,256],"06006D99":[512,512]};
+
+const items = ITEMS.map(([stem, label]) => {
+  const parts = stem.split("_"), id = parts[parts.length - 1], dat = parts[0];
+  const fmt = parts.slice(1, -1).join("_").replace("CUSTOM_LSCAPE_R8G8B8", "LSCAPE");
+  const [w, h] = DIMS[id];
+  return { stem, label, id, dat, fmt, w, h };
+});
+const PANES = [
+  { key: "orig", title: "Original", note: "nearest-neighbor, no smoothing", pixel: true },
+  { key: "fast", title: "Fast model", note: "realesr-animevideov3 · ~0.5 s/texture" },
+  { key: "x4", title: "Detailed model", note: "realesrgan-x4plus → 2× · ~30 s/texture" }
+];
+const src = (it, key) => `img/${it.stem}_${key}.webp`;
+
+const state = { i: 0, fmt: "All", mode: "side", zoom: "fit", bg: "check", wipeRight: "x4", wipe: 50 };
+try { Object.assign(state, JSON.parse(localStorage.getItem("tb-state") || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem("tb-state", JSON.stringify(state)); } catch (e) {} };
+
+const $ = s => document.querySelector(s);
+const visible = () => items.filter(it => state.fmt === "All" || it.fmt === state.fmt);
+
+function renderFormats() {
+  const fmts = ["All", ...new Set(items.map(it => it.fmt))];
+  $("#fmts").innerHTML = "";
+  for (const f of fmts) {
+    const b = document.createElement("button");
+    b.textContent = f; b.setAttribute("aria-pressed", String(state.fmt === f));
+    b.onclick = () => { state.fmt = f; state.i = 0; renderFormats(); renderStrip(); renderBench(); save(); };
+    $("#fmts").append(b);
+  }
+}
+
+function renderStrip() {
+  const strip = $("#strip"); strip.innerHTML = "";
+  visible().forEach((it, n) => {
+    const b = document.createElement("button");
+    b.className = "thumb"; b.setAttribute("aria-current", String(n === state.i)); b.title = it.label;
+    b.innerHTML = `<div class="ti"><img class="pixel" loading="lazy" alt="" src="${src(it, "orig")}"></div><small>${it.fmt} ${it.id}</small>`;
+    b.onclick = () => { state.i = n; renderStrip(); renderBench(); save(); };
+    strip.append(b);
+  });
+}
+
+function stageWidth(it) { return state.zoom === "fit" ? null : it.w * 2 * Number(state.zoom); }
+
+function makeView(it, inner) {
+  const view = document.createElement("div"); view.className = "view";
+  const stage = document.createElement("div"); stage.className = "stage";
+  const w = stageWidth(it);
+  if (w) { stage.style.width = w + "px"; }
+  else { stage.style.width = "100%"; stage.style.maxWidth = `calc((min(70vh, 640px) - 2px) * ${it.w / it.h})`; }
+  stage.append(...inner); view.append(stage); return view;
+}
+
+function renderBench() {
+  const list = visible(); if (!list.length) return;
+  state.i = Math.min(state.i, list.length - 1);
+  const it = list[state.i];
+  $("#t-name").textContent = it.label;
+  $("#t-dl").innerHTML = `<div><dt>ID</dt><dd>0x${it.id}</dd></div><div><dt>Dat</dt><dd>${it.dat}</dd></div><div><dt>Format</dt><dd>${it.fmt}</dd></div><div><dt>Size</dt><dd>${it.w}×${it.h} → ${it.w * 2}×${it.h * 2}</dd></div><div><dt>Item</dt><dd>${state.i + 1} / ${list.length}</dd></div>`;
+  const bench = $("#bench"); bench.innerHTML = "";
+  bench.className = `bench bg-${state.bg}${state.mode === "wipe" ? " wipe" : ""}`;
+  const pixel = state.zoom !== "fit";
+
+  if (state.mode === "side") {
+    for (const p of PANES) {
+      const pane = document.createElement("section"); pane.className = "pane";
+      const img = new Image(); img.alt = `${it.label}, ${p.title}`; img.src = src(it, p.key);
+      if (p.pixel || pixel) img.classList.add("pixel");
+      pane.innerHTML = `<header><h3>${p.title}</h3><span>${p.note}</span></header>`;
+      pane.append(makeView(it, [img])); bench.append(pane);
+    }
+  } else {
+    const right = PANES.find(p => p.key === state.wipeRight);
+    const pane = document.createElement("section"); pane.className = "pane";
+    pane.innerHTML = `<header><h3>Original ← → ${right.title}</h3><span>drag the slider to wipe between them</span></header>`;
+    const base = new Image(); base.alt = `${it.label}, ${right.title}`; base.src = src(it, right.key); if (pixel) base.classList.add("pixel");
+    const top = new Image(); top.alt = `${it.label}, original`; top.src = src(it, "orig"); top.className = "top pixel";
+    const handle = document.createElement("div"); handle.className = "handle";
+    const apply = () => { top.style.clipPath = `inset(0 ${100 - state.wipe}% 0 0)`; handle.style.left = `calc(${state.wipe}% - 1px)`; };
+    apply();
+    pane.append(makeView(it, [base, top, handle]));
+    const row = document.createElement("div"); row.className = "wipe-row";
+    row.innerHTML = `<input id="wipe" type="range" min="0" max="100" value="${state.wipe}" aria-label="Wipe position">`;
+    for (const p of PANES.slice(1)) {
+      const b = document.createElement("button"); b.textContent = `Compare to ${p.title.toLowerCase()}`;
+      b.setAttribute("aria-pressed", String(state.wipeRight === p.key));
+      b.onclick = () => { state.wipeRight = p.key; renderBench(); save(); };
+      row.append(b);
+    }
+    row.querySelector("input").oninput = e => { state.wipe = +e.target.value; apply(); save(); };
+    pane.append(row); bench.append(pane);
+  }
+  wireViews();
+}
+
+// Drag-to-pan with scroll sync across panels.
+function wireViews() {
+  const views = [...document.querySelectorAll(".view")];
+  let syncing = false;
+  views.forEach(v => {
+    v.addEventListener("scroll", () => {
+      if (syncing) return; syncing = true;
+      const fx = v.scrollLeft / Math.max(1, v.scrollWidth - v.clientWidth), fy = v.scrollTop / Math.max(1, v.scrollHeight - v.clientHeight);
+      views.forEach(o => { if (o !== v) { o.scrollLeft = fx * (o.scrollWidth - o.clientWidth); o.scrollTop = fy * (o.scrollHeight - o.clientHeight); } });
+      requestAnimationFrame(() => { syncing = false; });
+    });
+    let sx, sy, sl, st, down = false;
+    v.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; down = true; sx = e.clientX; sy = e.clientY; sl = v.scrollLeft; st = v.scrollTop; v.classList.add("drag"); v.setPointerCapture(e.pointerId); });
+    v.addEventListener("pointermove", e => { if (!down) return; v.scrollLeft = sl - (e.clientX - sx); v.scrollTop = st - (e.clientY - sy); });
+    const up = () => { down = false; v.classList.remove("drag"); };
+    v.addEventListener("pointerup", up); v.addEventListener("pointercancel", up);
+  });
+}
+
+function pressGroup(attr, value) {
+  document.querySelectorAll(`[${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value)));
+}
+document.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => { state.zoom = b.dataset.zoom; pressGroup("data-zoom", state.zoom); renderBench(); save(); });
+document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { state.bg = b.dataset.bg; pressGroup("data-bg", state.bg); $("#bench").className = `bench bg-${state.bg}${state.mode === "wipe" ? " wipe" : ""}`; save(); });
+const setMode = m => { state.mode = m; $("#m-side").setAttribute("aria-pressed", String(m === "side")); $("#m-wipe").setAttribute("aria-pressed", String(m === "wipe")); renderBench(); save(); };
+$("#m-side").onclick = () => setMode("side");
+$("#m-wipe").onclick = () => setMode("wipe");
+const step = d => { const n = visible().length; state.i = (state.i + d + n) % n; renderStrip(); renderBench(); save(); };
+$("#prev").onclick = () => step(-1);
+$("#next").onclick = () => step(1);
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") step(1);
+  if (e.key === "ArrowLeft") step(-1);
+});
+
+// In-game screenshot wipes: each .shot is followed by its range input; drag the image or the slider.
+document.querySelectorAll(".shot").forEach(shot => {
+  const top = shot.querySelector(".top"), handle = shot.querySelector(".handle"), range = shot.nextElementSibling;
+  const set = pct => { pct = Math.max(0, Math.min(100, pct)); top.style.clipPath = `inset(0 ${100 - pct}% 0 0)`; handle.style.left = `calc(${pct}% - 1px)`; range.value = pct; };
+  range.oninput = e => set(+e.target.value);
+  let down = false;
+  const fromEvent = e => { const r = shot.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100); };
+  shot.addEventListener("pointerdown", e => { down = true; shot.setPointerCapture(e.pointerId); fromEvent(e); });
+  shot.addEventListener("pointermove", e => { if (down) fromEvent(e); });
+  shot.addEventListener("pointerup", () => { down = false; });
+  shot.addEventListener("pointercancel", () => { down = false; });
+  set(50);
+});
+
+pressGroup("data-zoom", state.zoom); pressGroup("data-bg", state.bg);
+renderFormats(); renderStrip(); setMode(state.mode);
+</script>
+
+</body>
+</html>

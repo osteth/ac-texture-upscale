@@ -4,10 +4,13 @@
 # Only client_portal.dat and client_highres.dat are swapped (the only files the texture pipeline changes).
 # Everything is on C:, so swaps are instant renames. Switching to live verifies the retail fingerprints.
 
-param([ValidateSet("status", "dev", "live")][string]$To = "status")
+# Holding folders default to .\datsets next to this script; AC_DATSETS overrides. Keep it on the same drive as the
+# game so swaps stay renames.
 
-$ac      = "C:\Turbine\Asheron's Call"
-$sets    = "C:\Users\ostet\ac-decomp\datsets"
+param([ValidateSet("status", "dev", "live")][string]$To = "status", [string]$AcPath = "C:\Turbine\Asheron's Call")
+
+$ac      = $AcPath
+$sets    = if ($env:AC_DATSETS) { $env:AC_DATSETS } else { Join-Path $PSScriptRoot "datsets" }
 $retail  = Join-Path $sets "retail"      # retail files live here while dev is active
 $dev     = Join-Path $sets "dev"         # dev files live here while retail is active
 $state   = Join-Path $sets "active.txt"
@@ -51,7 +54,7 @@ else {
     $ok = $true
     foreach ($f in $files) {
         $h = (Get-FileHash (Join-Path $ac $f) -Algorithm MD5).Hash
-        if ($h -ne $retailMd5[$f]) { $ok = $false; Write-Host "  $f does NOT match retail ($h). Restore from C:\Users\ostet\ac-decomp\dats." -ForegroundColor Red }
+        if ($h -ne $retailMd5[$f]) { $ok = $false; Write-Host "  $f does NOT match retail ($h). Restore it from your retail backup." -ForegroundColor Red }
         else { Write-Host "  $f matches retail" }
     }
     if ($ok) { Write-Host "Retail dats restored and verified." -ForegroundColor Green } else { exit 1 }

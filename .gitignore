@@ -25,3 +25,6 @@ dats/
 __pycache__/
 .vs/
 *.user
+
+# Comparison site images (screenshots and sample crops for docs/index.html)
+!docs/img/*.webp

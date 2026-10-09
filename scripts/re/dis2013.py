@@ -2,13 +2,13 @@ import os, sys, struct, bisect
 sys.path.insert(0, sys.argv[1]); sys.path.insert(0, sys.argv[2])
 import capstone
 from pdbpub import read_pdb_publics
-pubs = read_pdb_publics(os.environ.get('AC_PDB', r'C:\Users\ostet\ac-decomp\original\acclient.pdb'), 0x400000)
+pubs = read_pdb_publics(os.environ.get('AC_PDB', 'acclient.pdb'), 0x400000)
 addrs = [a for a, _ in pubs]
 def sym(v):
     i = bisect.bisect_right(addrs, v) - 1
     if i < 0: return None
     a, n = pubs[i]; return n if v == a else f'{n}+{v-a:#x}'
-d = open(os.environ.get('AC_EXE2013', r'C:\Users\ostet\ac-decomp\original\acclient_2013.exe'), 'rb').read()
+d = open(os.environ.get('AC_EXE2013', 'acclient_2013.exe'), 'rb').read()
 pe = struct.unpack_from('<I', d, 0x3c)[0]; osz = struct.unpack_from('<H', d, pe+20)[0]
 secs = [struct.unpack_from('<IIII', d, pe+24+osz+i*40+8) for i in range(struct.unpack_from('<H', d, pe+6)[0])]
 def off(v):

@@ -8,19 +8,47 @@ ACE server with no server changes, and players opt in by swapping two files.
 with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1.65 GB and `client_highres.dat`
 is 0.48 GB, both under the 2 GB per-file limit. Tested on a local ACE server and on prod, and shipped as a zip
 with an installer and an instant HD/retail switch ([`release/`](release)).
-**Download v1:** https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4
+
+**Download v1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.0) ·
+[MEGA mirror](https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4) (819 MB) ·
+**Interactive comparison:** [osteth.github.io/ac-texture-upscale](https://osteth.github.io/ac-texture-upscale/)
+
+## Before / after
+
+Same spot, same camera, retail on the left and v1 on the right. The
+[interactive page](https://osteth.github.io/ac-texture-upscale/) has wipe sliders over the full screenshots, plus a
+40-texture model comparison.
+
+**Outdoors:** grass near and far, distant houses, a timber building
+
+![Outdoor close-ups, retail vs v1](docs/img/ingame_outdoor_crops.webp)
+
+<details>
+<summary><b>Desert town:</b> armored NPC and forge, fountain, adobe buildings, ground</summary>
+
+![Desert town close-ups, retail vs v1](docs/img/ingame_town_crops.webp)
+</details>
+
+<details>
+<summary><b>Starter dungeon:</b> framed map, rug, stone floor, bookcase, wall trim</summary>
+
+![Starting room close-ups, retail vs 2x](docs/img/ingame_startroom_crops.webp)
+</details>
+
+## About
 
 See [docs/LESSONS-LEARNED.md](docs/LESSONS-LEARNED.md) for what we found along the way: the 2 GB dat limit, the
 terrain crash chain traced through the 2013 PDB, the upscaler's color drift and the back-projection fix, and the
 worker queue.
 
-> This repo holds code only. Never commit dat files, extracted textures, or other game data
-> (`.gitignore` blocks the common types).
+> The tools and docs are code only; game data is never committed (`.gitignore` blocks dat files, extracted
+> textures and encoded output). The screenshots and sample crops in `docs/img` illustrate the results. The
+> texture pack itself is distributed as a release download.
 
 ## How it works
 
 ```
- laptop (Windows, owns the game files)            GPU workers (Ubuntu: Osiris, Dmo-N)
+ laptop (Windows, owns the game files)            GPU workers (Ubuntu, 2 machines)    
  ------------------------------------             ------------------------------------
  1. fullmanifest  - list 3D textures
  2. extract       - decode to PNG + palette
@@ -94,8 +122,9 @@ Then copy the two dats into the swap script's dev set and run `swap\Swap To Dev 
   RELEASE.md). `fullmanifest` skips Region-referenced textures for that reason.
 - **Excluded for now:** UI/icons (drawn at pixel size).
 - **Palettized (INDEX16) textures** stay palettized so armor dyes and creature color variants keep working.
-- **Hard-coded paths:** some scripts assume the original Windows workspace paths (`C:\Users\ostet\ac-decomp`,
-  the MEGA folder) and need adjusting on another machine.
+- **Paths:** `texextract` takes the dat folder as an argument (or `AC_DATS`, default `./dats`); `swap-dats.ps1`
+  takes `-AcPath` and `AC_DATSETS`; the `scripts/re` tools take `AC_PDB` / `AC_EXE2013`. The game folder defaults to
+  `C:\Turbine\Asheron's Call` everywhere.
 
 ## Third-party
 

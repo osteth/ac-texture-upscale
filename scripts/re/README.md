@@ -13,5 +13,5 @@ Used to turn an `acclient.exe` crash offset into a function name (see "Terrain: 
 - `callers.py <capstone_dir> <this_dir> <symbol>...`: list direct callers of a function in the 2013 build.
 
 The live client (2015 build) has no matching PDB. Find the crash bytes in the 2013 build
-(`acclient_2013.exe`, which matches the shipped `acclient.pdb`), then name them there. Paths default to the
-original workspace; override with the `AC_PDB` and `AC_EXE2013` environment variables.
+(`acclient_2013.exe`, which matches the shipped `acclient.pdb`), then name them there. Set `AC_PDB` and `AC_EXE2013`
+to their paths (defaults: `acclient.pdb` and `acclient_2013.exe` in the current folder).

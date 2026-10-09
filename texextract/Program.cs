@@ -4,18 +4,19 @@ using DatReaderWriter.DBObjs;
 using DatReaderWriter.Enums;
 using DatReaderWriter.Options;
 
-var datDir = args.Length > 1 ? args[1] : @"C:\Users\ostet\ac-decomp\dats";
+// Dat folder: second argument, else the AC_DATS environment variable, else ./dats.
+var datDir = args.Length > 1 ? args[1] : System.Environment.GetEnvironmentVariable("AC_DATS") ?? "dats";
 
 switch (args.FirstOrDefault())
 {
     case "probe":
-        Probe();
+        Probe(datDir);
         break;
     case "stats":
         Stats(datDir);
         break;
     case "sample":
-        Sample(datDir, args.Length > 2 ? args[2] : @"C:\Users\ostet\ac-decomp\work\sample", args.Length > 3 ? int.Parse(args[3]) : 4);
+        Sample(datDir, args.Length > 2 ? args[2] : Path.Combine("work", "sample"), args.Length > 3 ? int.Parse(args[3]) : 4);
         break;
     case "encode":
         EncodeBatch(args[1], args[2], args[3], int.Parse(args[4]));
@@ -953,7 +954,7 @@ static byte[]? Decode(RenderSurface rs, DatCollection dats)
     }
 }
 
-static void Probe()
+static void Probe(string datDir)
 {
     var asm = typeof(RenderSurface).Assembly;
     foreach (var name in new[] { "DatReaderWriter.Enums.PixelFormat", "DatReaderWriter.Options.DatAccessType" })
@@ -967,7 +968,7 @@ static void Probe()
             Console.WriteLine($"{t.Name}.{f.Name}: {f.FieldType}");
 
     // How many bytes each format stores vs. a single uncompressed mip level, to detect embedded mipmaps.
-    using var dats = new DatCollection(@"C:\Users\ostet\ac-decomp\dats", DatAccessType.Read);
+    using var dats = new DatCollection(datDir, DatAccessType.Read);
     Console.WriteLine($"portal iteration: {dats.Portal.Iteration.CurrentIteration} highres: {dats.HighRes.Iteration.CurrentIteration}");
     var seen = new HashSet<PixelFormat>();
     foreach (var id in dats.Portal.GetAllIdsOfType<RenderSurface>())

@@ -98,7 +98,7 @@ disassembled the live 2015 client (Capstone), found the same bytes in the 2013 c
   RTX 3090 and RTX A4500 ran it at about 0.2 s. The full set took about 22 minutes of GPU time.
 - **A synced folder works as a job queue if the protocol is strict.** `jobs/` and `done/` in MEGA, `READY`
   written last by the laptop, `COMPLETE` written last by the worker, file and sidecar counts checked before a
-  batch starts. Batches are split by number (even to Osiris, odd to Dmo-N), so no locks are needed.
+  batch starts. Batches are split by number (even to one worker, odd to the other), so no locks are needed.
 - **Restart workers whenever the worker script changes,** because a running worker keeps the old code in
   memory. Confirm with script and binary md5s in each worker's NOTES.md before queueing.
 - **Keep big outputs on the workers' disks.** The 4x PNGs (about 15 GB) stay in `~/ac-upscale/keep/<tag>/`, and
@@ -149,4 +149,3 @@ disassembled the live 2015 client (Capstone), found the same bytes in the 2013 c
 - 4x: possible for chosen subsets within the 2 GB budget; full 4x needs client changes.
 - Lower "landscape detail" settings haven't been tested with the 2048 terrain tile.
 - The local test server lacks prod's custom content (missing custom weenies).
-- Dmo-N's worker runs as a transient systemd unit and won't survive a reboot.
