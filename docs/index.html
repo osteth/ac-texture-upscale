@@ -139,9 +139,9 @@ footer a { color: var(--muted) }
   </header>
 
   <section class="hero" aria-labelledby="hero-title">
-    <p class="eyebrow">HD textures for Asheron's Call</p>
-    <h1 id="hero-title">Dereth, <em>sharper</em>.<br>Every server, still.</h1>
-    <p class="sub">Every creature, suit of armor, building, dungeon and blade of grass at twice the resolution. It's built to stay <strong>end-of-retail compatible</strong>, so it works on every end-of-retail server you already play on.</p>
+    <p class="eyebrow">AC-HD &middot; version 1.0</p>
+    <h1 id="hero-title">HD textures for <em>Asheron's Call</em></h1>
+    <p class="sub"><strong>Works on every end-of-retail server. Nothing for server admins to do.</strong><br>Every creature, suit of armor, building, dungeon and blade of grass at twice the resolution, installed in one click and removed just as easily.</p>
     <div class="cta">
       <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download AC-HD <small>v1.0 &middot; 819 MB</small></a>
       <a class="ghost" href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">Mirror on MEGA</a>
@@ -154,7 +154,7 @@ footer a { color: var(--muted) }
         <div class="handle"></div>
         <span class="tag l">Original</span><span class="tag r">AC-HD</span>
       </div>
-      <figcaption class="caption"><span>Drag across the picture to compare.</span><span>The new-character starter dungeon, same spot, same camera.</span></figcaption>
+      <figcaption class="caption"><span>Move your mouse across the picture (or drag on a phone) to compare.</span><span>The new-character starter dungeon, same spot, same camera.</span></figcaption>
     </figure>
   </section>
 
@@ -183,7 +183,7 @@ footer a { color: var(--muted) }
   <section id="difference" aria-labelledby="diff-title">
     <p class="eyebrow">See the difference</p>
     <h2 id="diff-title">Same places, same camera</h2>
-    <p class="lede">Real in-game screenshots, taken before and after installing. Drag across each one.</p>
+    <p class="lede">Real in-game screenshots, taken before and after installing. Move across each one to compare.</p>
     <div class="compares">
       <article class="compare">
         <h3>A desert town</h3>
@@ -284,9 +284,11 @@ footer a { color: var(--muted) }
 </div>
 
 <script>
-// Drag-to-compare: pointer drag, keyboard (arrows) and click-to-jump on every .shot.
+// Compare slider on every .shot: the divider follows the mouse on hover, follows a finger while dragging on touch
+// screens, and moves with the arrow keys. Native image dragging is disabled so the browser can't steal the pointer.
 document.querySelectorAll(".shot").forEach(shot => {
   const top = shot.querySelector(".top-img"), handle = shot.querySelector(".handle");
+  shot.querySelectorAll("img").forEach(img => { img.draggable = false; });
   shot.tabIndex = 0;
   shot.setAttribute("role", "slider");
   shot.setAttribute("aria-label", "Compare original and AC-HD textures");
@@ -295,15 +297,24 @@ document.querySelectorAll(".shot").forEach(shot => {
   const set = v => {
     pct = Math.max(0, Math.min(100, v));
     top.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    top.style.webkitClipPath = top.style.clipPath;
     handle.style.left = pct + "%";
     shot.setAttribute("aria-valuenow", String(Math.round(pct)));
   };
-  const fromEvent = e => { const r = shot.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100); };
-  let down = false;
-  shot.addEventListener("pointerdown", e => { down = true; shot.setPointerCapture(e.pointerId); fromEvent(e); });
-  shot.addEventListener("pointermove", e => { if (down) fromEvent(e); });
-  shot.addEventListener("pointerup", () => { down = false; });
-  shot.addEventListener("pointercancel", () => { down = false; });
+  const follow = x => { const r = shot.getBoundingClientRect(); if (r.width) set((x - r.left) / r.width * 100); };
+  let dragging = false;
+
+  shot.addEventListener("pointermove", e => { if (e.pointerType === "mouse" || dragging) follow(e.clientX); });
+  shot.addEventListener("pointerdown", e => {
+    dragging = true;
+    e.preventDefault();                       // no text selection or image drag
+    try { shot.setPointerCapture(e.pointerId); } catch (_) {}
+    follow(e.clientX);
+  });
+  const stop = () => { dragging = false; };
+  shot.addEventListener("pointerup", stop);
+  shot.addEventListener("pointercancel", stop);
+  shot.addEventListener("dragstart", e => e.preventDefault());
   shot.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft") { set(pct - 5); e.preventDefault(); }
     if (e.key === "ArrowRight") { set(pct + 5); e.preventDefault(); }

@@ -365,9 +365,11 @@ document.querySelectorAll(".shot").forEach(shot => {
   const set = pct => { pct = Math.max(0, Math.min(100, pct)); top.style.clipPath = `inset(0 ${100 - pct}% 0 0)`; handle.style.left = `calc(${pct}% - 1px)`; range.value = pct; };
   range.oninput = e => set(+e.target.value);
   let down = false;
-  const fromEvent = e => { const r = shot.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100); };
-  shot.addEventListener("pointerdown", e => { down = true; shot.setPointerCapture(e.pointerId); fromEvent(e); });
-  shot.addEventListener("pointermove", e => { if (down) fromEvent(e); });
+  shot.querySelectorAll("img").forEach(img => { img.draggable = false; });
+  shot.addEventListener("dragstart", e => e.preventDefault());
+  const fromEvent = e => { const r = shot.getBoundingClientRect(); if (r.width) set((e.clientX - r.left) / r.width * 100); };
+  shot.addEventListener("pointerdown", e => { down = true; e.preventDefault(); try { shot.setPointerCapture(e.pointerId); } catch (_) {} fromEvent(e); });
+  shot.addEventListener("pointermove", e => { if (down || e.pointerType === "mouse") fromEvent(e); });
   shot.addEventListener("pointerup", () => { down = false; });
   shot.addEventListener("pointercancel", () => { down = false; });
   set(50);
