@@ -19,9 +19,9 @@ Same spot, same camera, retail on the left and v1 on the right. The
 [interactive page](https://osteth.github.io/ac-texture-upscale/) has wipe sliders over the full screenshots, plus a
 40-texture model comparison.
 
-**Outdoors:** grass near and far, distant houses, a timber building
+**Starter dungeon:** framed map, rug, stone floor, bookcase, wall trim
 
-![Outdoor close-ups, retail vs v1](docs/img/ingame_outdoor_crops.webp)
+![Starting room close-ups, retail vs 2x](docs/img/ingame_startroom_crops.webp)
 
 <details>
 <summary><b>Desert town:</b> armored NPC and forge, fountain, adobe buildings, ground</summary>
@@ -30,9 +30,9 @@ Same spot, same camera, retail on the left and v1 on the right. The
 </details>
 
 <details>
-<summary><b>Starter dungeon:</b> framed map, rug, stone floor, bookcase, wall trim</summary>
+<summary><b>Outdoors:</b> grass near and far, distant houses, a timber building</summary>
 
-![Starting room close-ups, retail vs 2x](docs/img/ingame_startroom_crops.webp)
+![Outdoor close-ups, retail vs v1](docs/img/ingame_outdoor_crops.webp)
 </details>
 
 ## About
