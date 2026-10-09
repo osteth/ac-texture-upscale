@@ -21,6 +21,7 @@ dats/
 # Local secrets / machine files
 *.txt
 !requirements.txt
+!release/*.txt
 __pycache__/
 .vs/
 *.user

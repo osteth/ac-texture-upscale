@@ -4,10 +4,14 @@ Tools for upscaling Asheron's Call's 3D textures with Real-ESRGAN and packing th
 dat files. The result is a client-only upgrade: it keeps dat iteration numbers unchanged, so it works on any
 ACE server with no server changes, and players opt in by swapping two files.
 
-Current output: **9,465 textures at 2x** (every texture on 3D models). `client_portal.dat` is 1.54 GB and
-`client_highres.dat` is 0.47 GB, both under the 2 GB per-file limit. It's tested on a local ACE server and on prod.
-See [docs/LESSONS-LEARNED.md](docs/LESSONS-LEARNED.md) for what we found along the way, including why full 4x
-doesn't fit.
+**Release v1** ([docs/RELEASE.md](docs/RELEASE.md)): every texture on 3D models plus the outdoor ground at 2x,
+with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1.65 GB and `client_highres.dat`
+is 0.48 GB, both under the 2 GB per-file limit. Tested on a local ACE server and on prod, and shipped as a zip
+with an installer and an instant HD/retail switch ([`release/`](release)).
+
+See [docs/LESSONS-LEARNED.md](docs/LESSONS-LEARNED.md) for what we found along the way: the 2 GB dat limit, the
+terrain crash chain traced through the 2013 PDB, the upscaler's color drift and the back-projection fix, and the
+worker queue.
 
 > This repo holds code only. Never commit dat files, extracted textures, or other game data
 > (`.gitignore` blocks the common types).
@@ -41,9 +45,11 @@ Worker setup is in [docs/WORKER-SETUP.md](docs/WORKER-SETUP.md).
 |---|---|
 | `texextract/` | C# (.NET 8) tool that reads and writes dats via Chorizite.DatReaderWriter |
 | `worker/` | `upscale_worker.py` (stdlib only) and `setup_worker.sh` for the Ubuntu GPU machines |
-| `scripts/` | `queue_jobs.py` (queue batches), `finalize.py`, `contact_sheet.py`, `compare.py`, `viewer_assets.py` |
-| `swap/` | `swap-dats.ps1` plus double-click `.bat` files to swap dev/retail dats in place, verifying retail |
-| `docs/` | Lessons learned, worker setup |
+| `scripts/` | `queue_jobs.py` (queue batches), `backproject.py` (color-drift fix), `drift.py` (measure color shift vs retail), `finalize.py`, `contact_sheet.py`, `compare.py`, `viewer_assets.py` |
+| `scripts/re/` | Crash-site tools: disassembler wrapper and a minimal PDB reader to name client functions |
+| `swap/` | Developer swap: `swap-dats.ps1` plus `.bat` files to swap dev/retail dats in place, verifying retail |
+| `release/` | Player kit: `hdtex.ps1` (install / hd / retail / status / uninstall), `.bat` buttons, README, checksums |
+| `docs/` | Lessons learned, release recipe, worker setup |
 
 ## texextract commands
 
@@ -51,11 +57,15 @@ Worker setup is in [docs/WORKER-SETUP.md](docs/WORKER-SETUP.md).
 texextract fullmanifest <datDir> <out.tsv>                      every 3D texture in an encodable format
 texextract collect <datDir> <landblockHex> <ids.txt> <out.tsv>  every texture in one landblock (+ extra setups)
 texextract extract <datDir> <manifest.tsv> <outDir>             decode to PNG; INDEX16 also gets .idx/.pal
-texextract encode <jobDir> <upscaledDir> <outDir> <scale>       (worker) resize + re-encode to .bin
+texextract encode <jobDir> <upscaledDir> <outDir> <scale>       (worker) resize, back-project, re-encode to .bin
 texextract todxt <manifest.tsv> <binDir> <outBinDir> <out.tsv>  R8G8B8/A8R8G8B8 -> DXT1/DXT5
-texextract compact <datDir> <manifest.tsv> <binDir> <outDir> [scale]   rebuild portal/highres compactly
+texextract compact <datDir> <manifest.tsv> <binDir[;binDir2...]> <outDir> [scale]   rebuild portal/highres compactly
 texextract verifydat <retail.dat> <new.dat> [manifest.tsv]      header + every entry vs retail
 texextract packbins <datDir> <manifest.tsv> <binDir> <outDir> [scale]  in-place pack (small sets only)
+texextract terrainids <datDir> <out.txt>                        textures reachable from the Region (CPU-blended)
+texextract masks2x <datDir> <outBinDir> <rows.tsv>              terrain blend masks (LSCAPE_ALPHA) at 2x
+texextract setbasetex <client_portal.dat> <size>                Region TexMerge.BaseTexSize (2048 for 2x terrain)
+texextract dumpregion <datDir>                                  print the Region's scalar settings
 texextract classify | whereused | sample | stats | probe        analysis helpers
 ```
 
@@ -79,7 +89,9 @@ Then copy the two dats into the swap script's dev set and run `swap\Swap To Dev 
 ## Known limits
 
 - **2 GB per dat file:** full 4x would need about 7 GB for portal. 4x is possible only for chosen subsets.
-- **Excluded for now:** terrain (blended at fixed size with masks) and UI/icons (drawn at pixel size).
+- **Terrain needs its own steps:** uncompressed 2x ground textures, 2x masks, and `BaseTexSize` 2048 (see
+  RELEASE.md). `fullmanifest` skips Region-referenced textures for that reason.
+- **Excluded for now:** UI/icons (drawn at pixel size).
 - **Palettized (INDEX16) textures** stay palettized so armor dyes and creature color variants keep working.
 - **Hard-coded paths:** some scripts assume the original Windows workspace paths (`C:\Users\ostet\ac-decomp`,
   the MEGA folder) and need adjusting on another machine.

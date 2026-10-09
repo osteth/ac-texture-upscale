@@ -66,10 +66,18 @@ def run_batch(root, name, batch, binary, gpu):
         for p in pngs:
             shutil.copy2(os.path.join(src, p), tin)
         start = time.time()
-        cmd = [binary, "-i", tin, "-o", tout, "-n", job["model"], "-s", str(job["scale"]), "-f", "png"]
-        if gpu is not None:
-            cmd += ["-g", str(gpu)]
-        proc = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        # Re-encode runs reuse the model output kept from an earlier run of the same tag instead of the GPU.
+        kept = os.path.join(keep_root, job.get("tag", "untagged"))
+        if all(os.path.exists(os.path.join(kept, p)) for p in pngs):
+            for p in pngs:
+                shutil.copy2(os.path.join(kept, p), tout)
+            proc = subprocess.CompletedProcess([], 0, "", "")
+            log(f"{batch}: reusing kept {job['scale']}x output from {kept}")
+        else:
+            cmd = [binary, "-i", tin, "-o", tout, "-n", job["model"], "-s", str(job["scale"]), "-f", "png"]
+            if gpu is not None:
+                cmd += ["-g", str(gpu)]
+            proc = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         elapsed = time.time() - start
         produced = sorted(p for p in os.listdir(tout) if p.endswith(".png"))
         missing = sorted(set(pngs) - set(produced))

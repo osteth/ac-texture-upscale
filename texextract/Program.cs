@@ -32,6 +32,18 @@ switch (args.FirstOrDefault())
     case "packbins":
         PackBins(datDir, args[2], args[3], args[4], args.Length > 5 ? int.Parse(args[5]) : 2);
         break;
+    case "setbasetex":
+        SetBaseTexSize(args[1], uint.Parse(args[2]));
+        break;
+    case "dumpregion":
+        DumpRegion(datDir);
+        break;
+    case "masks2x":
+        Masks2x(datDir, args[2], args[3]);
+        break;
+    case "terrainids":
+        TerrainIds(datDir, args[2]);
+        break;
     case "fullmanifest":
         FullManifest(datDir, args[2]);
         break;
@@ -72,6 +84,14 @@ static void EncodeBatch(string jobDir, string upDir, string outDir, int scale)
             int sw = int.Parse(r[4]), sh = int.Parse(r[5]), w = sw * scale, h = sh * scale;
             var img = StbImageSharp.ImageResult.FromMemory(File.ReadAllBytes(Path.Combine(upDir, r[0])), StbImageSharp.ColorComponents.RedGreenBlueAlpha);
             var rgba = img.Width == w && img.Height == h ? img.Data : ResizeLanczos(img.Data, img.Width, img.Height, w, h);
+            // The model drifts color (darker, slightly blue) and can leave tile seams; restore the original's
+            // low-frequency color while keeping the new detail. The original is the batch's input PNG.
+            var origPath = Path.Combine(jobDir, r[0]);
+            if (File.Exists(origPath))
+            {
+                var orig = StbImageSharp.ImageResult.FromMemory(File.ReadAllBytes(origPath), StbImageSharp.ColorComponents.RedGreenBlueAlpha);
+                rgba = BackProject(rgba, w, h, orig.Data, sw, sh, 2);
+            }
             byte[] srcData = Array.Empty<byte>(); uint[]? pal = null;
             if (format == PixelFormat.PFID_INDEX16)
             {
@@ -180,7 +200,11 @@ static void Compact(string srcDatDir, string manifestPath, string binDir, string
                 var rs = src.Get<RenderSurface>(e.Id)!;
                 rs.Width *= scale; rs.Height *= scale;
                 rs.Format = Enum.Parse<PixelFormat>(r[3]);
-                rs.SourceData = File.ReadAllBytes(Path.Combine(binDir, Path.GetFileNameWithoutExtension(r[0]) + ".bin"));
+                // binDir may list several folders separated by ';' -- the first one holding the file wins.
+                var binName = Path.GetFileNameWithoutExtension(r[0]) + ".bin";
+                var binPath = binDir.Split(';').Select(d => Path.Combine(d, binName)).FirstOrDefault(File.Exists)
+                    ?? throw new FileNotFoundException($"{binName} not found in {binDir}");
+                rs.SourceData = File.ReadAllBytes(binPath);
                 if (!dst.TryWriteFile(rs, e)) throw new Exception($"write failed {e.Id:X8}");
                 replaced++;
             }
@@ -320,6 +344,33 @@ static void PackBins(string srcDatDir, string manifestPath, string binDir, strin
     }
 }
 
+// Back-projection: repeatedly shrink the upscaled image to the original size, take (original - shrunk) as the color
+// error, enlarge it and add it back. Fixes model color drift and tile seams while keeping the added detail.
+// Works on RGB only; alpha is left as the model produced it (cutout edges stay sharp).
+static byte[] BackProject(byte[] up, int w, int h, byte[] orig, int ow, int oh, int iterations)
+{
+    var cur = (byte[])up.Clone();
+    for (var it = 0; it < iterations; it++)
+    {
+        var down = ResizeLanczos(cur, w, h, ow, oh);
+        var err = new byte[ow * oh * 4];
+        var errF = new float[ow * oh * 3];
+        for (var i = 0; i < ow * oh; i++)
+            for (var c = 0; c < 3; c++) errF[i * 3 + c] = orig[i * 4 + c] - down[i * 4 + c];
+        // Encode the signed error as bytes centered on 128 so the existing RGBA resizer can enlarge it.
+        for (var i = 0; i < ow * oh; i++)
+        {
+            for (var c = 0; c < 3; c++) err[i * 4 + c] = (byte)Math.Clamp(128 + errF[i * 3 + c] / 2, 0, 255);
+            err[i * 4 + 3] = 255;
+        }
+        var errUp = ResizeLanczos(err, ow, oh, w, h);
+        for (var i = 0; i < w * h; i++)
+            for (var c = 0; c < 3; c++)
+                cur[i * 4 + c] = (byte)Math.Clamp(cur[i * 4 + c] + (errUp[i * 4 + c] - 128) * 2, 0, 255);
+    }
+    return cur;
+}
+
 // Separable Lanczos-3 resize of RGBA8 with premultiplied alpha (so transparent edges don't bleed dark fringes).
 static byte[] ResizeLanczos(byte[] src, int sw, int sh, int dw, int dh)
 {
@@ -383,6 +434,100 @@ static byte[] ResizeLanczos(byte[] src, int sw, int sh, int dw, int dh)
     return dst;
 }
 
+// Sets Region.TerrainInfo.LandSurfaces.TexMerge.BaseTexSize in a portal dat (in place). The client allocates its
+// terrain blend buffer (TexMerge::tex_data) as BaseTexSize^2 * 4 and TileCSI writes texture size * TexTiling per
+// side into it, so 2x terrain textures with retail tiling need BaseTexSize doubled. The Region's iteration is kept.
+static void SetBaseTexSize(string portalPath, uint size)
+{
+    using var db = new DatDatabase(o => { o.FilePath = portalPath; o.AccessType = DatAccessType.ReadWrite; });
+    foreach (var rid in db.GetAllIdsOfType<Region>())
+    {
+        var reg = db.Get<Region>(rid)!;
+        db.Tree.TryGetFile(rid, out var entry);
+        var tm = reg.TerrainInfo.LandSurfaces.TexMerge;
+        Console.WriteLine($"Region {rid:X8}: BaseTexSize {tm.BaseTexSize} -> {size}");
+        tm.BaseTexSize = size;
+        var origDate = entry.RawDate;
+        if (!db.TryWriteFile(reg, entry)) throw new Exception("region write failed");
+        if (db.Tree.TryGetFile(rid, out var written) && written.RawDate != origDate) { written.RawDate = origDate; db.Tree.Insert(written); }
+    }
+}
+
+// Prints the Region's scalar fields (anything that isn't a collection), to find terrain size settings.
+static void DumpRegion(string datDir)
+{
+    using var dats = new DatCollection(datDir, DatAccessType.Read);
+    foreach (var rid in dats.Portal.GetAllIdsOfType<Region>())
+    {
+        var reg = dats.Portal.Get<Region>(rid)!;
+        Console.WriteLine($"Region {rid:X8}");
+        void Walk(object? o, string path, int depth)
+        {
+            if (o == null || depth > 6) return;
+            var t = o.GetType();
+            if (t.IsPrimitive || t.IsEnum || o is string || t.Name.StartsWith("QualifiedDataId")) { Console.WriteLine($"  {path} = {o}"); return; }
+            if (o is System.Collections.IEnumerable seq) { Console.WriteLine($"  {path} = [{seq.Cast<object>().Count()} items]"); return; }
+            foreach (var f in t.GetFields(BindingFlags.Public | BindingFlags.Instance)) Walk(f.GetValue(o), path + "." + f.Name, depth + 1);
+            foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0 && p.Name is not ("HeaderFlags" or "DBObjType")))
+                Walk(p.GetValue(o), path + "." + p.Name, depth + 1);
+        }
+        Walk(reg, "Region", 0);
+    }
+}
+
+// Terrain blend masks (LSCAPE_ALPHA) at 2x via plain Lanczos (they are smooth gradients, not art). ImgTex::MergeTexture
+// indexes the mask with the terrain texture's width/height, so masks must be at least as large as the terrain
+// textures they blend. Writes <stem>.bin per mask and appends manifest rows for both portal and highres copies.
+static void Masks2x(string datDir, string outBinDir, string outManifest)
+{
+    Directory.CreateDirectory(outBinDir);
+    using var dats = new DatCollection(datDir, DatAccessType.Read);
+    var rows = new List<string>();
+    foreach (var (label, db) in new (string, DatDatabase)[] { ("portal", dats.Portal), ("highres", dats.HighRes) })
+        foreach (var id in db.GetAllIdsOfType<RenderSurface>().OrderBy(i => i))
+        {
+            if (!db.TryGet<RenderSurface>(id, out var rs) || rs.Format != PixelFormat.PFID_CUSTOM_LSCAPE_ALPHA) continue;
+            int w = rs.Width * 2, h = rs.Height * 2;
+            var big = ResizeLanczos(Decode(rs, dats)!, rs.Width, rs.Height, w, h);
+            var name = $"{label}_CUSTOM_LSCAPE_ALPHA_{id:X8}.png";
+            File.WriteAllBytes(Path.Combine(outBinDir, Path.GetFileNameWithoutExtension(name) + ".bin"), EncodeCore(rs.Format, big, w, h, w, h, Array.Empty<byte>(), null)!);
+            rows.Add($"{name}\t{label}\t{id:X8}\t{rs.Format}\t{rs.Width}\t{rs.Height}\t{rs.DefaultPaletteId:X8}");
+            Console.WriteLine($"{label} {id:X8} {rs.Width}x{rs.Height} -> {w}x{h}");
+        }
+    File.WriteAllLines(outManifest, rows);
+}
+
+// Lists every RenderSurface reachable from Region records (terrain types, road/corner/side blend maps, detail
+// textures, sky). The client blends terrain on the CPU (ImgTex::MergeTexture -> ImgTex::TileCSI) assuming the
+// retail size and an uncompressed layout, so these must stay retail. One id per line, hex.
+static void TerrainIds(string datDir, string outPath)
+{
+    using var dats = new DatCollection(datDir, DatAccessType.Read);
+    var portal = dats.Portal;
+    var found = new HashSet<uint>();
+    var seen = new HashSet<uint>();
+    var stack = new Stack<uint>();
+    var regions = portal.GetAllIdsOfType<Region>().ToList();
+    foreach (var rid in regions)
+        if (portal.TryGet<Region>(rid, out var reg))
+            foreach (var v in CollectIds(reg, 0)) if ((v >> 24) is 0x05 or 0x06 or 0x08) stack.Push(v);
+    while (stack.Count > 0)
+    {
+        var id = stack.Pop();
+        if (!seen.Add(id)) continue;
+        switch (id >> 24)
+        {
+            case 0x08 when portal.TryGet<Surface>(id, out var sf): if (sf.OrigTextureId != 0) stack.Push(sf.OrigTextureId); break;
+            case 0x05 when portal.TryGet<SurfaceTexture>(id, out var st): foreach (var t in st.Textures) stack.Push(t.DataId); break;
+            case 0x06: found.Add(id); break;
+        }
+    }
+    File.WriteAllLines(outPath, found.OrderBy(i => i).Select(i => i.ToString("X8")));
+    Console.WriteLine($"{regions.Count} region(s); {found.Count} terrain/sky RenderSurfaces");
+    foreach (var g in found.Select(id => portal.TryGet<RenderSurface>(id, out var rs) ? $"{rs.Format} {rs.Width}x{rs.Height}" : "missing").GroupBy(s => s).OrderByDescending(g => g.Count()))
+        Console.WriteLine($"  {g.Key}: {g.Count()}");
+}
+
 // Manifest of every 3D-model texture (referenced by any SurfaceTexture) in an encodable format, from both
 // portal and highres. Terrain (LSCAPE) and UI art are never referenced by SurfaceTextures, so they drop out.
 static void FullManifest(string datDir, string outManifest)
@@ -393,6 +538,12 @@ static void FullManifest(string datDir, string outManifest)
         if (dats.Portal.TryGet<SurfaceTexture>(id, out var st))
             foreach (var t in st.Textures) used3d.Add(t.DataId);
 
+    // Terrain textures are also referenced through SurfaceTextures, but the client blends them on the CPU at
+    // retail size/format (ImgTex::TileCSI), so anything reachable from the Region must stay retail.
+    var terrainFile = Path.Combine(Path.GetTempPath(), "ac_terrain_ids.txt");
+    TerrainIds(datDir, terrainFile);
+    var terrain = File.ReadAllLines(terrainFile).Select(l => Convert.ToUInt32(l, 16)).ToHashSet();
+
     var encodable = new[] { PixelFormat.PFID_DXT1, PixelFormat.PFID_DXT3, PixelFormat.PFID_DXT5, PixelFormat.PFID_INDEX16,
                             PixelFormat.PFID_A8R8G8B8, PixelFormat.PFID_R8G8B8 };
     var rows = new List<string>();
@@ -401,7 +552,8 @@ static void FullManifest(string datDir, string outManifest)
         foreach (var id in db.GetAllIdsOfType<RenderSurface>().OrderBy(i => i))
         {
             if (!db.TryGet<RenderSurface>(id, out var rs)) continue;
-            var why = !used3d.Contains(id) ? "not used on 3D models" : !encodable.Contains(rs.Format) ? rs.Format.ToString() : rs.Width < 4 || rs.Height < 4 ? "smaller than 4px" : null;
+            var why = !used3d.Contains(id) ? "not used on 3D models" : terrain.Contains(id) ? "terrain (CPU-blended)"
+                : !encodable.Contains(rs.Format) ? rs.Format.ToString() : rs.Width < 4 || rs.Height < 4 ? "smaller than 4px" : null;
             if (why != null) { skipped[$"{label}: {why}"] = skipped.GetValueOrDefault($"{label}: {why}") + 1; continue; }
             rows.Add($"{label}_{rs.Format.ToString().Replace("PFID_", "")}_{id:X8}.png\t{label}\t{id:X8}\t{rs.Format}\t{rs.Width}\t{rs.Height}\t{rs.DefaultPaletteId:X8}");
         }
@@ -689,6 +841,10 @@ static byte[]? EncodeCore(PixelFormat format, byte[] rgba, int w, int h, int src
             var b = new byte[px * 3];
             for (var i = 0; i < px; i++) { b[i * 3] = rgba[i * 4 + 2]; b[i * 3 + 1] = rgba[i * 4 + 1]; b[i * 3 + 2] = rgba[i * 4]; }
             return b;
+        case PixelFormat.PFID_CUSTOM_LSCAPE_ALPHA:
+            var m = new byte[px];
+            for (var i = 0; i < px; i++) m[i] = rgba[i * 4];
+            return m;
         case PixelFormat.PFID_INDEX16:
             if (pal == null) return null;
             var (sw, sh, src) = (srcW, srcH, srcData);
@@ -777,6 +933,10 @@ static byte[]? Decode(RenderSurface rs, DatCollection dats)
         case PixelFormat.PFID_R8G8B8:
         case PixelFormat.PFID_CUSTOM_LSCAPE_R8G8B8:
             for (var i = 0; i < px; i++) { dst[i * 4] = src[i * 3 + 2]; dst[i * 4 + 1] = src[i * 3 + 1]; dst[i * 4 + 2] = src[i * 3]; dst[i * 4 + 3] = 255; }
+            return dst;
+        case PixelFormat.PFID_CUSTOM_LSCAPE_ALPHA:
+            // Terrain blend mask: one byte per pixel, shown as opaque grayscale.
+            for (var i = 0; i < px; i++) { dst[i * 4] = dst[i * 4 + 1] = dst[i * 4 + 2] = src[i]; dst[i * 4 + 3] = 255; }
             return dst;
         case PixelFormat.PFID_INDEX16:
         case PixelFormat.PFID_P8:

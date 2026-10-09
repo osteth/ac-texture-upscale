@@ -1,5 +1,30 @@
 # Handoff: GPU upscale workers on Osiris and Dmo-N
 
+## UPDATE 3 (2026-10-09, about 02:30): color-correction re-encode, so restart both workers again
+
+The full run worked in-game, but Real-ESRGAN x4plus darkens textures and shifts them slightly blue: on average
+-2.5 luma, -5 on DXT1, -20 on the worst ones, plus tile seams. The encoder now applies back-projection against
+each batch's original PNG, and tests show drift dropping from -3.2 to -0.1 (worst -21 to -1).
+
+**What changed**
+- `worker/bin/texextract`: new build, 67,851,435 bytes, md5 `23c4fe02b227cea204278fbfa75d5ae6`.
+- `worker/upscale_worker.py`: md5 `19f8d78532f70c24a91564d89a2b9ea2`. If `~/ac-upscale/keep/<tag>/` already has
+  a batch's model output, the worker reuses it and skips Real-ESRGAN entirely. The re-encode is CPU only,
+  using the 4x PNGs each machine kept from `full-3d-v1`.
+
+**Steps on each machine**
+1. Wait for both files to sync, and check the md5s above.
+2. Restart the worker with the same arguments as before (Osiris: tmux `acup` with `--gpu 0`; Dmo-N: systemd user
+   unit with `--gpu 1`).
+3. Confirm `~/ac-upscale/keep/full-3d-v1/` exists and holds about this machine's share of 9,465 PNGs.
+4. Write "restarted on worker rev 3" plus the date and time into `done/<name>/NOTES.md`.
+
+Once both notes sync, the laptop deletes `done/*/batch_00000..00094`. The workers then redo those batches
+from the kept output. Expect each batch's log to say "reusing kept 4x output". If one runs Real-ESRGAN instead,
+its kept files are missing; note which batches in NOTES.md.
+
+---
+
 ## UPDATE 2 (2026-10-08 night): restart both workers on the new script before the full run
 
 The starting-room run (batches 0-7) is collected and its jobs/done folders were cleaned up. Thanks for
