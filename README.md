@@ -8,6 +8,7 @@ ACE server with no server changes, and players opt in by swapping two files.
 with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1.65 GB and `client_highres.dat`
 is 0.48 GB, both under the 2 GB per-file limit. Tested on a local ACE server and on prod, and shipped as a zip
 with an installer and an instant HD/retail switch ([`release/`](release)).
+**Download v1:** https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4
 
 See [docs/LESSONS-LEARNED.md](docs/LESSONS-LEARNED.md) for what we found along the way: the 2 GB dat limit, the
 terrain crash chain traced through the 2013 PDB, the upscaler's color drift and the back-projection fix, and the

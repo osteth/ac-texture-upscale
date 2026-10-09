@@ -1,7 +1,9 @@
 # Release v1: AC HD Textures 2x
 
 Shipped 2026-10-09 as `AC-HD-Textures-2x-v1.zip` (819 MB, zip SHA-256
-`3265433b11763e7af83106d452034917b5ce1975e19c84967af4161e87271e60`). The player-facing kit (installer, switch
+`3265433b11763e7af83106d452034917b5ce1975e19c84967af4161e87271e60`).
+
+**Download:** https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4 The player-facing kit (installer, switch
 scripts, README, checksums) is in [`release/`](../release); the two dat files aren't in git.
 
 | File | SHA-256 | Size |
