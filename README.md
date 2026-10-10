@@ -40,6 +40,12 @@ Same spot, same camera, retail on the left and v1 on the right. The
 </details>
 
 <details>
+<summary><b>Out hunting:</b> tree bark and a pack of drudges</summary>
+
+![Drudge close-ups, retail vs v1](docs/img/ingame_drudges_crops.webp)
+</details>
+
+<details>
 <summary><b>Outdoors:</b> grass near and far, distant houses, a timber building</summary>
 
 ![Outdoor close-ups, retail vs v1](docs/img/ingame_outdoor_crops.webp)
