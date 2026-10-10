@@ -34,6 +34,12 @@ Same spot, same camera, retail on the left and v1 on the right. The
 ![Starting room close-ups, retail vs 2x](docs/img/ingame_startroom_crops.webp)
 
 <details>
+<summary><b>Town Network:</b> barrel, portal, brick, armor, cobblestones</summary>
+
+![Town Network close-ups, retail vs v1](docs/img/ingame_townnet_crops.webp)
+</details>
+
+<details>
 <summary><b>Desert town:</b> armored NPC and forge, fountain, adobe buildings, ground</summary>
 
 ![Desert town close-ups, retail vs v1](docs/img/ingame_town_crops.webp)
