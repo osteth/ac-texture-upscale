@@ -97,6 +97,10 @@ The script checks each dat before packing: HD against `release/SHA256SUMS.txt`, 
 the end-of-retail hashes, and that the retail highres isn't the HD one. It also writes
 `release/retail/SHA256SUMS.txt`.
 
+Tested by the maintainer after release (2026-10-15): v1.0.1 works with the retail client from
+[thwargle.com](https://www.thwargle.com/) and the AC:Unreal client ([thwargle.com/unreal](https://www.thwargle.com/unreal/)),
+as well as Vitaeum.
+
 ## Next (v1.1)
 
 Re-encode everything with back-projection (workers reuse their kept 4x output, so no GPU time), rebuild with
