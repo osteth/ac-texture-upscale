@@ -61,10 +61,30 @@ Not tested: lower "landscape detail" graphics settings with the 2048 terrain til
 
 ## v1.0.1 packaging
 
-Same dats as v1.0, repackaged:
+v1.0 plus one new image, repackaged:
+- The character select background (`0x06007576`, a raw JPEG RenderSurface) is replaced with
+  [`art/06007576-character-select.jpg`](../art/06007576-character-select.jpg). It is 800x600, baseline 4:4:4 JPEG
+  like the original, because clients draw UI images at their pixel size: a bigger image breaks the screen layout
+  in any client that doesn't scale it. Every other portal entry is byte-identical to v1.0.
+- `client_highres.dat` is the v1.0 file, unchanged.
 - The zip now carries all four dats in an `HD DATs` folder, so Vitaeum can use it directly as a DAT folder,
   globally or per launch row. Cell and local are the unchanged end-of-retail files.
 - A second download, `AC-Retail-DATs.zip`, holds the four clean end-of-retail dats.
+- The installer updates an existing AC-HD install in place, and treats the v1.0 portal as HD, never as retail.
+
+| File | SHA-256 | Size |
+|---|---|---|
+| `client_portal.dat` | `f23e5cf1a0e8471aaf1bc3865264929a42b6236cf9fd1fdcc708dbc0a3f7ae6c` | 1,724,441,600 |
+| `client_highres.dat` | `a80db1fc5b7533092007920abe1dfa414ae766ad976d361d7f8d89cf742658e0` (same as v1.0) | 502,809,600 |
+
+Build the portal from the v1.0 dats (the manifest has one row, `06007576.png  portal  06007576  500`, and the
+bin folder holds the JPEG as `06007576.bin`; scale 1 keeps the stored 0x0 size that JPEG surfaces use):
+
+```
+texextract compact <v1.0 dats> work\charsel.tsv work\charsel_bins <out> 1
+texextract verifydat <v1.0 dats>\client_portal.dat <out>\client_portal.dat work\charsel.tsv
+# then copy the v1.0 client_highres.dat over the rebuilt one (compact rewrites it with a different hash)
+```
 
 Build both zips with:
 

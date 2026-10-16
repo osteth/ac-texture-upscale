@@ -6,7 +6,8 @@ What this is
 Every texture used on 3D models (creatures, armor, clothing, weapons, items,
 buildings, dungeons, scenery) and the outdoor ground, upscaled to twice the
 original resolution with an AI upscaler and packed back into the game's
-data files. Interface art and icons are unchanged.
+data files. Interface art and icons are unchanged, except for a repainted
+character select background.
 
 It stays END-OF-RETAIL COMPATIBLE. Unlike custom dat files, which tie you to
 one server, this pack changes only textures: the dat version numbers and all
@@ -80,6 +81,9 @@ Install for ThwargLauncher (retail client)
 1. Close Asheron's Call and ThwargLauncher (check the system tray).
 2. Extract this whole zip to any folder.
 3. Double-click "Install HD Textures.bat".
+
+Updating from an earlier AC-HD version: run "Install HD Textures.bat" from
+this zip. It replaces your HD files and keeps your retail set as it was.
 
 The installer keeps your current client_portal.dat and client_highres.dat as
 the "retail" set, copies the HD versions in, checks them against their

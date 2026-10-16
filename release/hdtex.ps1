@@ -22,9 +22,11 @@ $files = "client_portal.dat", "client_highres.dat"
 $store = Join-Path $AcPath "hd-textures"
 $state = Join-Path $store "active.txt"
 $hdSha = @{
-    "client_portal.dat"  = "1509a08871f1ed068dfd61495b839e659d2768bb10e9f4f0302a50f91ff67b9f"
+    "client_portal.dat"  = "f23e5cf1a0e8471aaf1bc3865264929a42b6236cf9fd1fdcc708dbc0a3f7ae6c"
     "client_highres.dat" = "a80db1fc5b7533092007920abe1dfa414ae766ad976d361d7f8d89cf742658e0"
 }
+# Earlier AC-HD versions, so they're never mistaken for retail files (v1.0 portal).
+$oldHdSha = @("1509a08871f1ed068dfd61495b839e659d2768bb10e9f4f0302a50f91ff67b9f")
 
 function Fail($msg) { Write-Host $msg -ForegroundColor Red; exit 1 }
 function Active { if (Test-Path $state) { (Get-Content $state -Raw).Trim() } else { "" } }
@@ -49,10 +51,26 @@ switch ($Action) {
     }
     "install" {
         Require-Closed
-        if (Active) { Write-Host "Already installed (using $(Active)). Use 'hd' or 'retail' to switch."; exit 0 }
         foreach ($f in $files) { if (-not (Test-Path (Join-Path $pack $f))) { Fail "Missing $f in $pack. Extract the whole zip first." } }
+        if (Active) {
+            # Already installed: bring the HD set up to this version, wherever it currently sits.
+            $hdDir = if ((Active) -eq "hd") { $AcPath } else { Join-Path $store "hd" }
+            $updated = 0
+            foreach ($f in $files) {
+                $dst = Join-Path $hdDir $f
+                if ((Get-FileHash $dst -Algorithm SHA256).Hash.ToLower() -eq $hdSha[$f]) { continue }
+                Write-Host "Updating HD $f (this takes a minute) ..."
+                Copy-Item (Join-Path $pack $f) $dst -Force
+                if ((Get-FileHash $dst -Algorithm SHA256).Hash.ToLower() -ne $hdSha[$f]) { Fail "$f did not copy correctly. Run the installer again." }
+                $updated++
+            }
+            if ($updated) { Write-Host "HD textures updated to this version (using $(Active))." -ForegroundColor Green }
+            else { Write-Host "Already installed and up to date (using $(Active)). Use 'hd' or 'retail' to switch." }
+            exit 0
+        }
         foreach ($f in $files) {
-            if ((Get-FileHash (Join-Path $AcPath $f) -Algorithm SHA256).Hash.ToLower() -eq $hdSha[$f]) { Fail "$f in your AC folder is already the HD version, so there's no retail copy to keep. Copy the original $f back first (the AC-Retail-DATs download has a clean copy)." }
+            $h = (Get-FileHash (Join-Path $AcPath $f) -Algorithm SHA256).Hash.ToLower()
+            if ($h -eq $hdSha[$f] -or $oldHdSha -contains $h) { Fail "$f in your AC folder is already an HD version, so there's no retail copy to keep. Copy the original $f back first (the AC-Retail-DATs download has a clean copy)." }
         }
         $exe = [IO.File]::ReadAllBytes((Join-Path $AcPath "acclient.exe")); $pe = [BitConverter]::ToInt32($exe, 0x3c)
         if (-not ([BitConverter]::ToUInt16($exe, $pe + 22) -band 0x20)) { Write-Host "Warning: this acclient.exe is not large-address-aware (2 GB limit). Busy areas may run out of memory." -ForegroundColor Yellow }

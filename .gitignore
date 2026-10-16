@@ -27,5 +27,8 @@ __pycache__/
 .vs/
 *.user
 
+# Replacement art packed into the dats (see art/README.md)
+!art/*.jpg
+
 # Comparison site images (screenshots and sample crops for docs/index.html)
 !docs/img/*.webp

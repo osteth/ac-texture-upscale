@@ -144,7 +144,8 @@ Then copy the two dats into the swap script's dev set and run `swap\Swap To Dev 
 - **2 GB per dat file:** full 4x would need about 7 GB for portal. 4x is possible only for chosen subsets.
 - **Terrain needs its own steps:** uncompressed 2x ground textures, 2x masks, and `BaseTexSize` 2048 (see
   RELEASE.md). `fullmanifest` skips Region-referenced textures for that reason.
-- **Excluded for now:** UI/icons (drawn at pixel size).
+- **Excluded for now:** UI/icons (drawn at pixel size). The one exception is the character select background
+  (`0x06007576`), replaced with repainted art at the original 800x600 so every client lays it out the same.
 - **Palettized (INDEX16) textures** stay palettized so armor dyes and creature color variants keep working.
 - **Paths:** `texextract` takes the dat folder as an argument (or `AC_DATS`, default `./dats`); `swap-dats.ps1`
   takes `-AcPath` and `AC_DATSETS`; the `scripts/re` tools take `AC_PDB` / `AC_EXE2013`. The game folder defaults to
