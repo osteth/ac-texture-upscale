@@ -8,6 +8,8 @@
 #
 # Both sets live in <AC folder>\hd-textures\ (hd\ and retail\). Switching moves two files between that folder
 # and the AC folder, which on the same drive is just a rename, so it takes no time and needs no extra space.
+# Only portal and highres differ from retail; the pack's cell and local dats are there for Vitaeum, which reads
+# the "HD DATs" folder directly.
 
 param(
     [Parameter(Position = 0)][ValidateSet("install", "hd", "retail", "status", "uninstall")][string]$Action = "status",
@@ -15,7 +17,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$pack  = $PSScriptRoot
+$pack  = Join-Path $PSScriptRoot "HD DATs"
 $files = "client_portal.dat", "client_highres.dat"
 $store = Join-Path $AcPath "hd-textures"
 $state = Join-Path $store "active.txt"
@@ -48,9 +50,9 @@ switch ($Action) {
     "install" {
         Require-Closed
         if (Active) { Write-Host "Already installed (using $(Active)). Use 'hd' or 'retail' to switch."; exit 0 }
-        foreach ($f in $files) { if (-not (Test-Path (Join-Path $pack $f))) { Fail "Missing $f next to this script. Extract the whole zip first." } }
+        foreach ($f in $files) { if (-not (Test-Path (Join-Path $pack $f))) { Fail "Missing $f in $pack. Extract the whole zip first." } }
         foreach ($f in $files) {
-            if ((Get-FileHash (Join-Path $AcPath $f) -Algorithm SHA256).Hash.ToLower() -eq $hdSha[$f]) { Fail "$f in your AC folder is already the HD version, so there's no retail copy to keep. Restore your original $f first." }
+            if ((Get-FileHash (Join-Path $AcPath $f) -Algorithm SHA256).Hash.ToLower() -eq $hdSha[$f]) { Fail "$f in your AC folder is already the HD version, so there's no retail copy to keep. Copy the original $f back first (the AC-Retail-DATs download has a clean copy)." }
         }
         $exe = [IO.File]::ReadAllBytes((Join-Path $AcPath "acclient.exe")); $pe = [BitConverter]::ToInt32($exe, 0x3c)
         if (-not ([BitConverter]::ToUInt16($exe, $pe + 22) -band 0x20)) { Write-Host "Warning: this acclient.exe is not large-address-aware (2 GB limit). Busy areas may run out of memory." -ForegroundColor Yellow }

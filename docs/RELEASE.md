@@ -59,6 +59,23 @@ v1 was built before that change, so its manifest still listed them and they went
 
 Not tested: lower "landscape detail" graphics settings with the 2048 terrain tile.
 
+## v1.0.1 packaging
+
+Same dats as v1.0, repackaged:
+- The zip now carries all four dats in an `HD DATs` folder, so Vitaeum can use it directly as a DAT folder,
+  globally or per launch row. Cell and local are the unchanged end-of-retail files.
+- A second download, `AC-Retail-DATs.zip`, holds the four clean end-of-retail dats.
+
+Build both zips with:
+
+```
+python scripts/build_release.py --hd <HD dat dir> --retail <retail dat dir> --version v1.0.1 --out <out dir>
+```
+
+The script checks each dat before packing: HD against `release/SHA256SUMS.txt`, retail portal/cell/local against
+the end-of-retail hashes, and that the retail highres isn't the HD one. It also writes
+`release/retail/SHA256SUMS.txt`.
+
 ## Next (v1.1)
 
 Re-encode everything with back-projection (workers reuse their kept 4x output, so no GPU time), rebuild with

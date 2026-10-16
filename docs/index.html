@@ -101,11 +101,38 @@ details.zoom img { margin-top: 10px; border-radius: 6px; border: 1px solid var(-
 .list li.no::before { background: var(--line) }
 
 /* install */
+.sub { margin-top: 28px; font-size: 1.15rem }
 .steps { counter-reset: s; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; padding: 0; list-style: none }
 .steps li { counter-increment: s; background: var(--slate); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px 18px 64px; position: relative; min-width: 0 }
 .steps li::before { content: counter(s); position: absolute; left: 18px; top: 16px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gold); color: var(--gold); font: 700 1rem/30px var(--f-display); text-align: center }
 .steps b { color: var(--parch) }
 code { font: .88em/1.4 Consolas, ui-monospace, monospace; background: var(--slate-2); padding: 2px 6px; border-radius: 4px; color: var(--parch); overflow-wrap: anywhere }
+
+/* settings ladder */
+.ladder { --retail: #7f9bb8; --cross: #b9895a; margin-top: 24px; max-width: 760px; background: var(--slate); border: 1px solid var(--line); border-radius: 8px; padding: 16px }
+.lad-track { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; cursor: pointer; touch-action: none; user-select: none; border-radius: 6px }
+.lad-body { display: grid; grid-template-columns: auto 1fr; gap: 8px }
+.lad-rows, .lad-col { display: grid; grid-template-rows: 2.4em 10px 2.6em 2.6em; align-content: start; align-items: center }
+.lad-rows { gap: 6px; padding: 10px 0; font-size: .8rem; font-weight: 700; color: var(--muted); text-align: right }
+.lad-rows .r { color: var(--retail) } .lad-rows .h { color: var(--gold) }
+.lad-col { gap: 6px; text-align: center; padding: 8px 2px; border-radius: 6px; border: 2px solid transparent; font-size: .8rem; line-height: 1.2 }
+.lad-col.on { border-color: var(--parch); background: var(--slate-2) }
+.lad-col b { color: var(--parch); font-size: .95rem }
+.lad-bar { border-radius: 3px; height: 10px; align-self: stretch }
+.lad-col .s { color: var(--text) }
+.lad-col .s.none { color: var(--line) }
+.lad-col .s.meh { color: var(--muted); opacity: .6 }
+.z-retail, .lad-bar.z-retail { background: var(--retail) }
+.z-cross, .lad-bar.z-cross { background: var(--cross) }
+.z-hd, .lad-bar.z-hd { background: var(--gold) }
+.lad-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: .85rem; color: var(--muted) }
+.lad-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px }
+.lad-out { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; min-height: 5.5em }
+.lad-out p { margin: 0 }
+.lad-set { color: var(--parch); font-weight: 700 }
+.lad-say { margin-top: 6px !important }
+.lad-track:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px }
+@media (max-width: 520px) { .lad-col, .lad-rows { font-size: .68rem } .lad-col { padding: 6px 0 } .lad-rows { padding: 8px 0 } .lad-col b { font-size: .8rem } .ladder { padding: 10px } .lad-body { gap: 4px } }
 
 /* faq */
 .faq { margin-top: 20px; display: grid; gap: 10px; max-width: 860px }
@@ -133,6 +160,7 @@ footer a { color: var(--muted) }
     <a class="brand" href="./">AC<span>-</span>HD</a>
     <nav aria-label="Page">
       <a href="#difference">See the difference</a>
+      <a href="#settings">Settings</a>
       <a href="#install">Install</a>
       <a href="#faq">FAQ</a>
     </nav>
@@ -143,7 +171,7 @@ footer a { color: var(--muted) }
     <h1 id="hero-title">HD textures for <em>Asheron's Call</em></h1>
     <p class="sub"><strong>Works on every end-of-retail server. Nothing for server admins to do.</strong><br>Every creature, suit of armor, building, dungeon and blade of grass at twice the resolution, installed in one click and removed just as easily.</p>
     <div class="cta">
-      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download AC-HD <small>v1.0 &middot; 819 MB</small></a>
+      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-HD-Textures-2x-v1.0.1.zip">Download AC-HD <small>v1.0.1 &middot; 918 MB</small></a>
       <a class="ghost" href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">Mirror on MEGA</a>
       <p class="cta-note">Windows &middot; free &middot; one-click install and uninstall</p>
     </div>
@@ -175,7 +203,7 @@ footer a { color: var(--muted) }
       </div>
       <div class="promise">
         <h3>Switch back in a second</h3>
-        <p>Two buttons swap between AC-HD and the original textures instantly. Uninstalling puts your original files back.</p>
+        <p>Two buttons swap between AC-HD and the original textures instantly, and uninstalling puts your original files back. In Vitaeum, each launch row can use its own files.</p>
       </div>
     </div>
   </section>
@@ -261,15 +289,47 @@ footer a { color: var(--muted) }
     </ul>
   </section>
 
+  <section id="settings" aria-labelledby="settings-title">
+    <p class="eyebrow">Your settings</p>
+    <h2 id="settings-title">Where AC-HD fits</h2>
+    <p class="lede">The in-game option <b>Environment Texture Detail</b> decides how sharp textures are. AC-HD shifts every step of it up one notch, so the two overlap. Drag along the scale to see which one fits your setup.</p>
+    <div class="ladder" id="ladder">
+      <div class="lad-body">
+        <div class="lad-rows" aria-hidden="true"><span>Sharpness</span><span></span><span class="r">Retail</span><span class="h">AC-HD</span></div>
+        <div class="lad-track" tabindex="0" role="slider" aria-label="Texture sharpness" aria-valuemin="0" aria-valuemax="6"></div>
+      </div>
+      <div class="lad-legend" aria-hidden="true">
+        <span><i class="z-retail"></i>Retail is the better pick</span>
+        <span><i class="z-cross"></i>Crossover</span>
+        <span><i class="z-hd"></i>Only AC-HD</span>
+      </div>
+      <div class="lad-out" aria-live="polite">
+        <p class="lad-set"></p>
+        <p class="lad-say"></p>
+      </div>
+    </div>
+    <p class="lede">Landscape Texture Detail (the ground) follows the same steps: AC-HD at Medium matches retail at High. Tip: the game's overall "Very High" preset only sets Environment Texture Detail to High, so pick Very High yourself to get the high-res textures.</p>
+  </section>
+
   <section id="install" aria-labelledby="install-title">
     <p class="eyebrow">Install</p>
-    <h2 id="install-title">Three steps, about a minute</h2>
+    <h2 id="install-title">Pick your launcher</h2>
+    <p class="lede">The download is a complete set of game files in one folder, <code>HD DATs</code>. Use it straight from that folder in Vitaeum, or let the installer swap it into your game folder for ThwargLauncher.</p>
+    <h3 class="sub">Vitaeum</h3>
+    <ol class="steps">
+      <li><b>Extract the zip somewhere permanent</b>, for example <code>Documents\AC-HD</code>. Vitaeum reads the files from there.</li>
+      <li><b>For every character:</b> Settings &rsaquo; Retail DAT files &rsaquo; <em>Choose folder</em>, and pick <code>HD DATs</code>.</li>
+      <li><b>Or just some characters:</b> open a launch row in Favorites, click <em>Choose</em> next to DAT files, pick <code>HD DATs</code>, and save the row.</li>
+    </ol>
+    <p class="lede">Want retail and HD side by side? Leave the default on a retail set and give your HD rows the <code>HD DATs</code> folder. Each login uses its own row's files, so both can be logged in at once.</p>
+    <h3 class="sub">ThwargLauncher (retail client)</h3>
     <ol class="steps">
       <li><b>Close Asheron's Call</b> and ThwargLauncher (check the system tray).</li>
       <li><b>Extract the zip</b> anywhere, for example your Downloads folder.</li>
       <li><b>Double-click <code>Install HD Textures.bat</code>.</b> Your original files are kept, and switching is instant from then on.</li>
     </ol>
     <p class="lede">To switch, double-click <code>Use Retail Textures.bat</code> or <code>Use HD Textures.bat</code>. To remove AC-HD completely, use <code>Uninstall HD Textures.bat</code>. If your game isn't in <code>C:\Turbine\Asheron's Call</code>, the included README shows the one-line command for other folders.</p>
+    <p class="lede"><b>Need the original files?</b> <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a> is a clean set of all four end-of-retail dat files: a second set for Vitaeum, or a way back if your originals are missing.</p>
   </section>
 
   <section id="faq" aria-labelledby="faq-title">
@@ -279,9 +339,9 @@ footer a { color: var(--muted) }
       <details><summary>Can I still play on other servers?</summary><p>Yes, on any server that runs the end-of-retail game files, which is nearly all of them. AC-HD keeps every version number and all gameplay data identical to end of retail. Servers that ship their own custom files still need their own files.</p></details>
       <details><summary>Does the server need to install anything?</summary><p>No. Everything happens on your PC. Server admins don't need to do anything, and other players see no difference.</p></details>
       <details><summary>Does it change gameplay?</summary><p>No. Only how textures look. Items, creatures, spells, maps and everything else the game logic uses are untouched.</p></details>
-      <details><summary>Will it slow my game down?</summary><p>Areas take a moment longer to load the first time you visit them, and the game uses more memory: about 1.6 GB in busy outdoor areas, compared with about 1.2 GB. That's well within what the client can use (4 GB).</p></details>
-      <details><summary>How do I go back to the original look?</summary><p>Double-click <em>Use Retail Textures.bat</em> (instant), or <em>Uninstall HD Textures.bat</em> to remove AC-HD and restore your original files.</p></details>
-      <details><summary>Is it safe? What does it change on my PC?</summary><p>It only swaps two files in your Asheron's Call folder: <code>client_portal.dat</code> and <code>client_highres.dat</code>. Your originals are kept next to them. The download includes SHA-256 checksums, and the installer checks them. The scripts are plain text you can read, and the full source is on GitHub.</p></details>
+      <details><summary>Will it slow my game down?</summary><p>Areas take a moment longer to load the first time you visit them, and the game uses more memory: about 1.6 GB in busy outdoor areas, compared with about 1.2 GB. That's well within what the client can use (4 GB). If your framerate drops, lower Environment and Landscape Texture Detail one step: AC-HD at Medium costs about the same as retail at High. See <a href="#settings">Where AC-HD fits</a>.</p></details>
+      <details><summary>How do I go back to the original look?</summary><p>With ThwargLauncher, double-click <em>Use Retail Textures.bat</em> (instant), or <em>Uninstall HD Textures.bat</em> to remove AC-HD and restore your original files. In Vitaeum, point the launch row back at your retail folder. If your original files are gone, download <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a>.</p></details>
+      <details><summary>Is it safe? What does it change on my PC?</summary><p>With Vitaeum it changes nothing in your game folder: Vitaeum reads the <code>HD DATs</code> folder where you extracted it. With ThwargLauncher, it only swaps two files in your Asheron's Call folder: <code>client_portal.dat</code> and <code>client_highres.dat</code>. Your originals are kept next to them. The download includes SHA-256 checksums, and the installer checks them. The scripts are plain text you can read, and the full source is on GitHub.</p></details>
       <details><summary>How was it made?</summary><p>Each texture was upscaled with the Real-ESRGAN AI model, color-corrected against the original, and packed back into the game's own formats. The outdoor ground needed special handling to fit the client's terrain blending. The whole process is documented on GitHub.</p></details>
       <details><summary>I had a crash. What should I do?</summary><p>Switch to retail textures and see whether it happens again. If it only happens with AC-HD, report where you were and what you were doing on the GitHub issues page. Rare crashes when portaling into very busy towns also happen on the original textures.</p></details>
     </div>
@@ -291,13 +351,13 @@ footer a { color: var(--muted) }
     <h2 id="close-title">See Dereth the way you remember it</h2>
     <p>Free, end-of-retail compatible, and one click to undo.</p>
     <div class="cta">
-      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0/AC-HD-Textures-2x-v1.zip">Download AC-HD <small>v1.0 &middot; 819 MB</small></a>
+      <a class="btn" href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-HD-Textures-2x-v1.0.1.zip">Download AC-HD <small>v1.0.1 &middot; 918 MB</small></a>
       <a class="ghost" href="https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4">Mirror on MEGA</a>
     </div>
   </section>
 
   <footer>
-    <span>AC-HD v1.0 &middot; a fan project for Asheron's Call emulator servers</span>
+    <span>AC-HD v1.0.1 &middot; a fan project for Asheron's Call emulator servers</span>
     <nav aria-label="More">
       <a href="bench.html">Texture-by-texture comparison</a>
       <a href="https://github.com/osteth/ac-texture-upscale">Source on GitHub</a>
@@ -345,6 +405,64 @@ document.querySelectorAll(".shot").forEach(shot => {
   });
   set(pct);
 });
+// Settings ladder: one column per distinct sharpness level, with the retail and AC-HD setting that produces it.
+// Drag, click or use the arrow keys to pick a level; the panel below says which set suits it.
+(() => {
+  const L = [
+    { k: "\u215B", r: "Very Low", h: null, z: "retail",
+      say: "Only retail goes this low. Stay on retail." },
+    { k: "\u00BC", r: "Low", h: "Very Low", z: "retail",
+      say: "Both can show this, but AC-HD still loads its full-size textures before shrinking them, so it loads slower for the same picture. Stay on retail." },
+    { k: "\u00BD", r: "Medium", h: "Low", z: "retail",
+      say: "Same picture either way, and retail loads faster. Stay on retail." },
+    { k: "1\u00D7", r: "High", h: "Medium", z: "cross",
+      say: "The crossover. Retail High and AC-HD Medium use about the same video memory. AC-HD Medium looks at least as sharp as retail High; new areas take a little longer to load the first time. This is where AC-HD starts to make sense. (Retail Very High is sharper on the textures Turbine made high-res versions of, including some weapons and creatures.)" },
+    { k: "1\u00D7+", r: "Very High", h: null, z: "cross",
+      say: "Retail's best: everything at full size plus Turbine's own high-res versions of about 2,300 textures, including many weapons and creatures. If your PC is comfortable here, AC-HD High is the next step up." },
+    { k: "2\u00D7", r: null, h: "High", z: "hd",
+      say: "Only AC-HD: every texture at twice retail's resolution." },
+    { k: "2\u00D7+", r: null, h: "Very High", z: "hd",
+      say: "The top: AC-HD at twice retail, with Turbine's high-res textures upscaled too." },
+  ];
+  const track = document.querySelector("#ladder .lad-track");
+  if (!track) return;
+  const set = document.querySelector("#ladder .lad-set"), say = document.querySelector("#ladder .lad-say");
+  const cols = L.map(l => {
+    const c = document.createElement("div");
+    c.className = "lad-col";
+    const meh = l.z === "retail" && l.h ? " meh" : "";
+    c.innerHTML = `<b>${l.k}</b><span class="lad-bar z-${l.z}"></span>` +
+      `<span class="s${l.r ? "" : " none"}">${l.r || "\u2014"}</span>` +
+      `<span class="s${l.h ? meh : " none"}">${l.h || "\u2014"}</span>`;
+    track.appendChild(c);
+    return c;
+  });
+  const lab = document.createElement("p");
+  lab.className = "lad-legend";
+  lab.innerHTML = "1\u00D7 is retail at High. A + means Turbine's high-res textures are on too. Faded settings work, but retail does the same job with faster loading.";
+  track.parentElement.after(lab);
+  let i = 3;
+  const pick = n => {
+    i = Math.max(0, Math.min(L.length - 1, n));
+    cols.forEach((c, j) => c.classList.toggle("on", j === i));
+    const l = L[i];
+    set.textContent = [l.r && `Retail: ${l.r}`, l.h && `AC-HD: ${l.h}`].filter(Boolean).join("  \u00B7  ");
+    say.textContent = l.say;
+    track.setAttribute("aria-valuenow", String(i));
+    track.setAttribute("aria-valuetext", `${l.k}: ${set.textContent}`);
+  };
+  const at = x => { const r = track.getBoundingClientRect(); if (r.width) pick(Math.floor((x - r.left) / r.width * L.length)); };
+  let dragging = false;
+  track.addEventListener("pointerdown", e => { dragging = true; try { track.setPointerCapture(e.pointerId); } catch (_) {} at(e.clientX); });
+  track.addEventListener("pointermove", e => { if (dragging) at(e.clientX); });
+  track.addEventListener("pointerup", () => { dragging = false; });
+  track.addEventListener("pointercancel", () => { dragging = false; });
+  track.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") { pick(i - 1); e.preventDefault(); }
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") { pick(i + 1); e.preventDefault(); }
+  });
+  pick(i);
+})();
 </script>
 </body>
 </html>

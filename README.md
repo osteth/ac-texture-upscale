@@ -19,8 +19,10 @@ with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1
 is 0.48 GB, both under the 2 GB per-file limit. Tested on a local ACE server and on prod, and shipped as a zip
 with an installer and an instant HD/retail switch ([`release/`](release)).
 
-**Download v1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.0) ·
-[MEGA mirror](https://mega.nz/file/wWcWALwD#oEX9MdL-N0b4nb1Q0TsoDfhxf5e54pmy0ePjl9334T4) (819 MB) ·
+**Download v1.0.1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.0.1)
+(918 MB, all four dats in an `HD DATs` folder; works with Vitaeum and ThwargLauncher) ·
+[AC-Retail-DATs](https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip)
+(clean end-of-retail set) ·
 **AC-HD site:** [osteth.github.io/ac-texture-upscale](https://osteth.github.io/ac-texture-upscale/)
 
 ## Before / after
@@ -99,7 +101,7 @@ Worker setup is in [docs/WORKER-SETUP.md](docs/WORKER-SETUP.md).
 | `scripts/` | `queue_jobs.py` (queue batches), `backproject.py` (color-drift fix), `drift.py` (measure color shift vs retail), `finalize.py`, `contact_sheet.py`, `compare.py`, `viewer_assets.py` |
 | `scripts/re/` | Crash-site tools: disassembler wrapper and a minimal PDB reader to name client functions |
 | `swap/` | Developer swap: `swap-dats.ps1` plus `.bat` files to swap dev/retail dats in place, verifying retail |
-| `release/` | Player kit: `hdtex.ps1` (install / hd / retail / status / uninstall), `.bat` buttons, README, checksums |
+| `release/` | Player kit: `hdtex.ps1` (install / hd / retail / status / uninstall), `.bat` buttons, README, checksums; `retail/` for the AC-Retail-DATs download. `scripts/build_release.py` builds both zips |
 | `docs/` | Lessons learned, release recipe, worker setup |
 
 ## texextract commands

@@ -22,6 +22,7 @@ dats/
 *.txt
 !requirements.txt
 !release/*.txt
+!release/retail/*.txt
 __pycache__/
 .vs/
 *.user
