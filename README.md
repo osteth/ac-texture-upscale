@@ -19,9 +19,10 @@ with 2x terrain blend masks and a 2048 px terrain tile. `client_portal.dat` is 1
 is 0.48 GB, both under the 2 GB per-file limit. Tested on a local ACE server and on prod, and shipped as a zip
 with an installer and an instant HD/retail switch ([`release/`](release)).
 
-**Download v1.0.1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.0.1)
-(918 MB, all four dats in an `HD DATs` folder; works with Vitaeum and ThwargLauncher) ·
-[AC-Retail-DATs](https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip)
+**Download v1.1:** [GitHub release](https://github.com/osteth/ac-texture-upscale/releases/tag/v1.1)
+(1,072 MB, all four dats in an `HD DATs` folder; works with Vitaeum and ThwargLauncher; 4x on the most detailed
+weapons, creatures and armor, retail size where upscaling adds nothing, see [RELEASE.md](docs/RELEASE.md#v11-texel-budget)) ·
+[AC-Retail-DATs](https://github.com/osteth/ac-texture-upscale/releases/download/v1.1/AC-Retail-DATs.zip)
 (clean end-of-retail set) ·
 **AC-HD site:** [osteth.github.io/ac-texture-upscale](https://osteth.github.io/ac-texture-upscale/)
 

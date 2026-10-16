@@ -101,7 +101,55 @@ Tested by the maintainer after release (2026-10-15): v1.0.1 works with the retai
 [thwargle.com](https://www.thwargle.com/) and the AC:Unreal client ([thwargle.com/unreal](https://www.thwargle.com/unreal/)),
 as well as Vitaeum.
 
-## Next (v1.1)
+## v1.1: texel budget
 
-Re-encode everything with back-projection (workers reuse their kept 4x output, so no GPU time), rebuild with
-the same terrain steps, and ship as v1.1. Expect a slightly brighter, more neutral look on buildings and armor.
+v1.0.1 with a texel budget ([`scripts/texel_budget.py`](../scripts/texel_budget.py)): low-value upscales go back to
+retail size, and the space goes to 4x where it shows.
+
+- Every upscaled portal texture is scored by how much its HD version differs from a plain Lanczos resize of retail
+  (mean absolute luma difference, alpha-weighted, 0-255; median 6). Below 3 the upscale adds about what texture
+  filtering would: side-by-side sheets of that band showed smooth skin and faces, sky, fur and soft cloth with no
+  visible difference.
+- **1,232 textures back to retail**, byte-for-byte from the end-of-retail portal.
+- **1,082 textures at 4x**: score 5 or more, used on weapons, creatures, or clothing/armor (by Setup / ClothingTable
+  in the ACE world db), no Turbine highres version (Very High draws that instead), and at most 2048 px at 4x. Encoded
+  from the workers' kept 4x output with back-projection; palettized textures still map to their own palette, so dyes
+  keep working.
+- Terrain is never touched. A first test trimmed 28 terrain textures (ground and blend masks) because they score
+  low; the CPU terrain blender needs them at the pack's size, and the ground near buildings went black. The script
+  only considers `fullmanifest` textures, which leaves out everything the terrain blender reads.
+- `client_highres.dat`, cell and local are unchanged from v1.0.1.
+
+The portal is 2,145,664,000 bytes, 1.8 MB under the 2 GB file limit, so further portal additions have to come out
+of something else.
+
+| File | SHA-256 | Size |
+|---|---|---|
+| `client_portal.dat` | `464d2ad7f08da87f93ddacc698dd32984a9fb9b182573d543e0116239fe016a6` | 2,145,664,000 |
+| `client_highres.dat` | `a80db1fc5b7533092007920abe1dfa414ae766ad976d361d7f8d89cf742658e0` (same as v1.0) | 502,809,600 |
+
+Build (from the v1.0.1 dats and the end-of-retail dats; `texextract` as before):
+
+```
+texextract fullmanifest <retail dats> retail_manifest.tsv
+texextract fullmanifest <v1.0.1 dats> hd_manifest.tsv
+texextract extract <retail dats> retail_manifest.tsv retail_png
+texextract extract <v1.0.1 dats> retail_manifest.tsv hd_png
+texextract whereused <retail dats> retail_manifest.tsv used.tsv
+texextract twins <retail dats> twins.txt
+python scripts/texel_budget.py --retail-manifest retail_manifest.tsv --hd-manifest hd_manifest.tsv \
+    --retail-png retail_png --hd-png hd_png --used used.tsv --twins twins.txt \
+    --weenies "<ACE world db>/Database/Patches/9 WeenieDefaults" --kept4x <kept 4x dir> --out plan
+texextract encode plan/job4x <kept 4x dir> bins4x 4
+texextract compact <v1.0.1 dats> plan/build.tsv bins4x <out> 2 <retail dats>
+texextract verifydat <v1.0.1 dats>/client_portal.dat <out>/client_portal.dat plan/build.tsv
+# then copy the v1.0.1 client_highres.dat over the rebuilt one
+python scripts/build_release.py --hd <out> --retail <retail dats> --version v1.1 --out <zip dir>
+```
+
+Tested in Vitaeum. Not yet measured: memory and frame time against v1.0.1 in a busy scene.
+
+## Next
+
+Re-encode the remaining 2x textures with back-projection (workers reuse their kept 4x output, so no GPU time). Expect
+a slightly brighter, more neutral look on buildings and armor; sizes don't change, so it fits the portal as is.

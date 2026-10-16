@@ -1,13 +1,18 @@
-ASHERON'S CALL HD TEXTURES - 2x pack, version 1
-================================================
+ASHERON'S CALL HD TEXTURES - version 1.1
+========================================
 
 What this is
 ------------
-Every texture used on 3D models (creatures, armor, clothing, weapons, items,
-buildings, dungeons, scenery) and the outdoor ground, upscaled to twice the
-original resolution with an AI upscaler and packed back into the game's
-data files. Interface art and icons are unchanged, except for a repainted
-character select background.
+Textures on 3D models (creatures, armor, clothing, weapons, items, buildings,
+dungeons, scenery) and the outdoor ground, upscaled with an AI upscaler and
+packed back into the game's data files:
+- Most textures at twice the original resolution.
+- About 1,100 of the most detailed weapon, creature, clothing and armor
+  textures at four times the original resolution.
+- About 1,200 smooth textures (skin, sky, soft cloth), where upscaling adds
+  nothing you can see, kept at the original size to save memory.
+Interface art and icons are unchanged, except for a repainted character
+select background.
 
 It stays END-OF-RETAIL COMPATIBLE. Unlike custom dat files, which tie you to
 one server, this pack changes only textures: the dat version numbers and all

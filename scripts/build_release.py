@@ -58,7 +58,7 @@ for d in DATS:
     if got != hd_sums[d]:
         sys.exit(f"HD {d}: sha256 {got} doesn't match release/SHA256SUMS.txt")
 print("HD dats match release/SHA256SUMS.txt")
-write_zip(os.path.join(a.out, f"AC-HD-Textures-2x-{a.version}.zip"),
+write_zip(os.path.join(a.out, f"AC-HD-Textures-{a.version}.zip"),
           [(k, os.path.join(release, k)) for k in KIT] + [(f"HD DATs/{d}", os.path.join(a.hd, d)) for d in DATS])
 
 if a.retail:
