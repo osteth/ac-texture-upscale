@@ -70,7 +70,8 @@ v1.0 plus one new image, repackaged:
 - The zip now carries all four dats in an `HD DATs` folder, so Vitaeum can use it directly as a DAT folder,
   globally or per launch row. Cell and local are the unchanged end-of-retail files.
 - A second download, `AC-Retail-DATs.zip`, holds the four clean end-of-retail dats.
-- The installer updates an existing AC-HD install in place, and treats the v1.0 portal as HD, never as retail.
+- No installer scripts: players copy the four dats into their game folder, and copy the AC-Retail-DATs set back
+  to undo it. Vitaeum users point a DAT folder at `HD DATs` instead.
 
 | File | SHA-256 | Size |
 |---|---|---|

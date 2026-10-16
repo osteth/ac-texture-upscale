@@ -27,11 +27,7 @@ Restore the retail files in your game folder
 --------------------------------------------
 1. Close Asheron's Call and ThwargLauncher.
 2. Copy the four files from "Retail DATs" into your Asheron's Call folder,
-   replacing the existing ones.
-
-If you installed AC-HD with its installer, use its "Use Retail Textures.bat"
-or "Uninstall HD Textures.bat" instead. This copy is for when your originals
-are missing or damaged.
+   and choose Replace when asked.
 
 Verify the files with SHA256SUMS.txt if you like:
     Get-FileHash "Retail DATs\client_portal.dat" -Algorithm SHA256

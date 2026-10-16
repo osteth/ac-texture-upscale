@@ -23,8 +23,6 @@ What's in the zip
         client_highres.dat       HD textures
         client_cell_1.dat        unchanged end-of-retail file
         client_local_English.dat unchanged end-of-retail file
-    Install HD Textures.bat  and the other .bat files (ThwargLauncher setup)
-    hdtex.ps1                the script the .bat files run
     SHA256SUMS.txt           checksums for the four .dat files
 
 Need the original files back? The AC-Retail-DATs download, from the same
@@ -79,41 +77,22 @@ game folder, or the AC-Retail-DATs download) and give the HD rows the
 Install for ThwargLauncher (retail client)
 ------------------------------------------
 1. Close Asheron's Call and ThwargLauncher (check the system tray).
-2. Extract this whole zip to any folder.
-3. Double-click "Install HD Textures.bat".
+2. Extract this zip anywhere.
+3. Copy the four files from the "HD DATs" folder into your Asheron's Call
+   folder (usually C:\Turbine\Asheron's Call), and choose Replace when asked.
 
-Updating from an earlier AC-HD version: run "Install HD Textures.bat" from
-this zip. It replaces your HD files and keeps your retail set as it was.
+That's it. Only client_portal.dat and client_highres.dat are different from
+retail; the other two are the same end-of-retail files, so copying all four
+is harmless and saves picking.
 
-The installer keeps your current client_portal.dat and client_highres.dat as
-the "retail" set, copies the HD versions in, checks them against their
-checksums, and switches you to HD. Both sets are kept in
-<AC folder>\hd-textures\. Only those two files change; cell and local are
-the same as retail.
+Going back to retail: download AC-Retail-DATs from the same place you got
+this pack, and copy its four files over the same way. Want to keep your own
+originals instead? Copy client_portal.dat and client_highres.dat out of your
+game folder before step 3.
 
-It assumes your game is in C:\Turbine\Asheron's Call. If it's somewhere else,
-open PowerShell in this folder and add -AcPath to any command, for example:
-
-    .\hdtex.ps1 install -AcPath "D:\Path\To\Asheron's Call"
-
-Switching between HD and retail: with the game and ThwargLauncher closed,
-double-click "Use Retail Textures.bat" or "Use HD Textures.bat". Switching is
-instant: it just swaps the two files. To see which set is active, run
-.\hdtex.ps1 status
-
-Uninstall: close the game and ThwargLauncher, then double-click
-"Uninstall HD Textures.bat". It switches you back to your original files and
-deletes the hd-textures folder.
-
-
-Manual install (if you prefer)
-------------------------------
-1. Close the game.
-2. In your Asheron's Call folder, copy client_portal.dat and client_highres.dat
-   somewhere safe.
-3. Copy those two files from the "HD DATs" folder into your Asheron's Call
-   folder, replacing the existing ones.
-To undo it, copy your saved originals back (or use the AC-Retail-DATs files).
+Updating from an earlier AC-HD version: just do the steps above. If you used
+the old installer, your original files are in <AC folder>\hd-textures\retail.
+That folder isn't used any more; delete it once you no longer need it.
 
 Verify the files with SHA256SUMS.txt if you like:
     Get-FileHash "HD DATs\client_portal.dat" -Algorithm SHA256

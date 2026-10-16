@@ -315,7 +315,7 @@ footer a { color: var(--muted) }
   <section id="install" aria-labelledby="install-title">
     <p class="eyebrow">Install</p>
     <h2 id="install-title">Pick your launcher</h2>
-    <p class="lede">The download is a complete set of game files in one folder, <code>HD DATs</code>. Use it straight from that folder in Vitaeum, or let the installer swap it into your game folder for ThwargLauncher.</p>
+    <p class="lede">The download is a complete set of game files in one folder, <code>HD DATs</code>. Use it straight from that folder in Vitaeum, or copy it over your game files for ThwargLauncher.</p>
     <h3 class="sub">Vitaeum</h3>
     <ol class="steps">
       <li><b>Extract the zip somewhere permanent</b>, for example <code>Documents\AC-HD</code>. Vitaeum reads the files from there.</li>
@@ -327,9 +327,9 @@ footer a { color: var(--muted) }
     <ol class="steps">
       <li><b>Close Asheron's Call</b> and ThwargLauncher (check the system tray).</li>
       <li><b>Extract the zip</b> anywhere, for example your Downloads folder.</li>
-      <li><b>Double-click <code>Install HD Textures.bat</code>.</b> Your original files are kept, and switching is instant from then on.</li>
+      <li><b>Copy the four files</b> from <code>HD DATs</code> into your Asheron's Call folder (usually <code>C:\Turbine\Asheron's Call</code>) and choose Replace.</li>
     </ol>
-    <p class="lede">To switch, double-click <code>Use Retail Textures.bat</code> or <code>Use HD Textures.bat</code>. To remove AC-HD completely, use <code>Uninstall HD Textures.bat</code>. If your game isn't in <code>C:\Turbine\Asheron's Call</code>, the included README shows the one-line command for other folders.</p>
+    <p class="lede">To go back, copy the four files from <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a> over them the same way.</p>
     <p class="lede"><b>Need the original files?</b> <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a> is a clean set of all four end-of-retail dat files: a second set for Vitaeum, or a way back if your originals are missing.</p>
   </section>
 
@@ -341,8 +341,8 @@ footer a { color: var(--muted) }
       <details><summary>Does the server need to install anything?</summary><p>No. Everything happens on your PC. Server admins don't need to do anything, and other players see no difference.</p></details>
       <details><summary>Does it change gameplay?</summary><p>No. Only how textures look. Items, creatures, spells, maps and everything else the game logic uses are untouched.</p></details>
       <details><summary>Will it slow my game down?</summary><p>Areas take a moment longer to load the first time you visit them, and the game uses more memory: about 1.6 GB in busy outdoor areas, compared with about 1.2 GB. That's well within what the client can use (4 GB). If your framerate drops, lower Environment and Landscape Texture Detail one step: AC-HD at Medium costs about the same as retail at High. See <a href="#settings">Where AC-HD fits</a>.</p></details>
-      <details><summary>How do I go back to the original look?</summary><p>With ThwargLauncher, double-click <em>Use Retail Textures.bat</em> (instant), or <em>Uninstall HD Textures.bat</em> to remove AC-HD and restore your original files. In Vitaeum, point the launch row back at your retail folder. If your original files are gone, download <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a>.</p></details>
-      <details><summary>Is it safe? What does it change on my PC?</summary><p>With Vitaeum it changes nothing in your game folder: Vitaeum reads the <code>HD DATs</code> folder where you extracted it. With ThwargLauncher, it only swaps two files in your Asheron's Call folder: <code>client_portal.dat</code> and <code>client_highres.dat</code>. Your originals are kept next to them. The download includes SHA-256 checksums, and the installer checks them. The scripts are plain text you can read, and the full source is on GitHub.</p></details>
+      <details><summary>How do I go back to the original look?</summary><p>In Vitaeum, point the launch row back at your retail folder. With ThwargLauncher, download <a href="https://github.com/osteth/ac-texture-upscale/releases/download/v1.0.1/AC-Retail-DATs.zip">AC-Retail-DATs</a> and copy its four files into your Asheron's Call folder, replacing the HD ones.</p></details>
+      <details><summary>Is it safe? What does it change on my PC?</summary><p>With Vitaeum it changes nothing in your game folder: Vitaeum reads the <code>HD DATs</code> folder where you extracted it. With ThwargLauncher, you copy the game files over your own, and only <code>client_portal.dat</code> and <code>client_highres.dat</code> actually differ from retail. There's nothing to run: no installer, no scripts, just data files. The download includes SHA-256 checksums, and the full source is on GitHub.</p></details>
       <details><summary>How was it made?</summary><p>Each texture was upscaled with the Real-ESRGAN AI model, color-corrected against the original, and packed back into the game's own formats. The outdoor ground needed special handling to fit the client's terrain blending. The whole process is documented on GitHub.</p></details>
       <details><summary>I had a crash. What should I do?</summary><p>Switch to retail textures and see whether it happens again. If it only happens with AC-HD, report where you were and what you were doing on the GitHub issues page. Rare crashes when portaling into very busy towns also happen on the original textures.</p></details>
     </div>

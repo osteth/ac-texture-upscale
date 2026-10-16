@@ -19,8 +19,7 @@ RETAIL_SHA = {
     "client_cell_1.dat": "6db0abf00fbceed62c3f1ee842ee7c1f423d732bed77a5b7c102ee89a52ab99e",
     "client_local_English.dat": "e85c820280c88fac7df6c8043f5e24596e9c8774193af4123d756546f78fb2bb",
 }
-KIT = ["README.txt", "hdtex.ps1", "SHA256SUMS.txt", "Install HD Textures.bat", "Use HD Textures.bat",
-       "Use Retail Textures.bat", "Uninstall HD Textures.bat"]
+KIT = ["README.txt", "SHA256SUMS.txt"]
 here = os.path.dirname(os.path.abspath(__file__))
 release = os.path.join(os.path.dirname(here), "release")
 

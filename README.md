@@ -101,7 +101,7 @@ Worker setup is in [docs/WORKER-SETUP.md](docs/WORKER-SETUP.md).
 | `scripts/` | `queue_jobs.py` (queue batches), `backproject.py` (color-drift fix), `drift.py` (measure color shift vs retail), `finalize.py`, `contact_sheet.py`, `compare.py`, `viewer_assets.py` |
 | `scripts/re/` | Crash-site tools: disassembler wrapper and a minimal PDB reader to name client functions |
 | `swap/` | Developer swap: `swap-dats.ps1` plus `.bat` files to swap dev/retail dats in place, verifying retail |
-| `release/` | Player kit: `hdtex.ps1` (install / hd / retail / status / uninstall), `.bat` buttons, README, checksums; `retail/` for the AC-Retail-DATs download. `scripts/build_release.py` builds both zips |
+| `release/` | Player README and checksums for the AC-HD zip; `retail/` for the AC-Retail-DATs download. Players copy the dats by hand (no scripts). `scripts/build_release.py` builds both zips |
 | `docs/` | Lessons learned, release recipe, worker setup |
 
 ## texextract commands
