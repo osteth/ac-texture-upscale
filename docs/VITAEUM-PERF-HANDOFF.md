@@ -48,6 +48,10 @@ Retail `~/Games/Vitaeum/dats` vs `~/Games/Vitaeum/AC-HD-Textures-2x-v1`, portal 
 
 ## Worth confirming
 
+**Update 2026-10-15:** the highres switch below is done in Vitaeum (PR #77, `b1101608`): at Very High Environment
+Texture Detail with `client_highres.dat` present it draws entry [0] from highres, otherwise entry [1], and changing the
+setting applies at once.
+
 - `client_highres.dat` is never read for textures: 0x06/0x08 DIDs always route to Portal (*verified*:
   `resources/src/source_classification.rs:40`).
 - The pack's highres dat holds 2,294 RenderSurfaces, none of which share an id with a portal entry.
