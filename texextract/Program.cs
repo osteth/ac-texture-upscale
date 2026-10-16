@@ -25,7 +25,7 @@ switch (args.FirstOrDefault())
         VerifyDat(args[1], args[2], args.Length > 3 ? args[3] : null);
         break;
     case "compact":
-        Compact(datDir, args[2], args[3], args[4], args.Length > 5 ? int.Parse(args[5]) : 2);
+        Compact(datDir, args[2], args[3], args[4], args.Length > 5 ? int.Parse(args[5]) : 2, args.Length > 6 ? args[6] : null);
         break;
     case "todxt":
         ToDxt(args[1], args[2], args[3], args[4]);
@@ -62,6 +62,9 @@ switch (args.FirstOrDefault())
         break;
     case "pack":
         Pack(datDir, args[2], args[3], args[4]);
+        break;
+    case "twins":
+        Twins(datDir, args[2]);
         break;
     default:
         Console.WriteLine("usage: texextract probe | stats [datDir] | sample [datDir] [outDir] [perFormat] | pack srcDatDir manifest.tsv pngDir outDatDir");
@@ -166,7 +169,9 @@ static void VerifyDat(string aPath, string bPath, string? manifestPath)
 // byte-for-byte with its original B-tree metadata (flags, iteration, date), except manifest textures, which are
 // written once from their .bin at `scale`. Header fields (versions, transactions, master map, ...) are copied from
 // retail. cell and local are copied unchanged.
-static void Compact(string srcDatDir, string manifestPath, string binDir, string outDatDir, int scale)
+// Optional manifest columns 5-6 (w, h) give a row's exact size instead of `scale`. A row whose format is "retail"
+// is copied byte-for-byte, with its metadata, from the same dat in `copyFromDir` (used to revert a texture).
+static void Compact(string srcDatDir, string manifestPath, string binDir, string outDatDir, int scale, string? copyFromDir = null)
 {
     Directory.CreateDirectory(outDatDir);
     foreach (var n in new[] { "client_cell_1.dat", "client_local_English.dat" })
@@ -192,14 +197,25 @@ static void Compact(string srcDatDir, string manifestPath, string binDir, string
         alloc.SetVersion(sh.Version, sh.EngineVersion, sh.GameVersion, sh.MajorVersion, sh.MinorVersion);
         using var dst = new DatDatabase(o => { o.FilePath = dstPath; o.AccessType = DatAccessType.ReadWrite; }, alloc);
 
-        int copied = 0, replaced = 0;
+        using var copyFrom = replace.Values.Any(r => r[3] == "retail")
+            ? new DatDatabase(o => { o.FilePath = Path.Combine(copyFromDir ?? throw new ArgumentException("retail rows need a copy-from dat folder"), file); o.AccessType = DatAccessType.Read; })
+            : null;
+        int copied = 0, replaced = 0, reverted = 0;
         var entries = src.Tree.ToList();
         foreach (var e in entries)
         {
-            if (replace.TryGetValue(e.Id, out var r))
+            if (replace.TryGetValue(e.Id, out var r) && r[3] == "retail")
+            {
+                if (!copyFrom!.Tree.TryGetFile(e.Id, out var re)) throw new Exception($"{e.Id:X8} not in {copyFromDir}");
+                if (!copyFrom.TryGetFileBytes(e.Id, out byte[] rb, false)) throw new Exception($"read failed {e.Id:X8}");
+                if (!dst.TryWriteFileBytes(e.Id, rb, rb.Length, re)) throw new Exception($"copy failed {e.Id:X8}");
+                reverted++;
+            }
+            else if (r != null)
             {
                 var rs = src.Get<RenderSurface>(e.Id)!;
-                rs.Width *= scale; rs.Height *= scale;
+                if (r.Length > 5 && r[4].Length > 0) { rs.Width = int.Parse(r[4]); rs.Height = int.Parse(r[5]); }
+                else { rs.Width *= scale; rs.Height *= scale; }
                 rs.Format = Enum.Parse<PixelFormat>(r[3]);
                 // binDir may list several folders separated by ';' -- the first one holding the file wins.
                 var binName = Path.GetFileNameWithoutExtension(r[0]) + ".bin";
@@ -243,7 +259,7 @@ static void Compact(string srcDatDir, string manifestPath, string binDir, string
         }
         typeof(DatReaderWriter.Lib.IO.BlockAllocators.StreamBlockAllocator)
             .GetMethod("WriteHeader", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(alloc, null);
-        Console.WriteLine($"{file}: {entries.Count} entries ({copied} copied, {replaced} upgraded), {new FileInfo(dstPath).Length / 1048576.0:F0} MB");
+        Console.WriteLine($"{file}: {entries.Count} entries ({copied} copied, {replaced} upgraded, {reverted} reverted), {new FileInfo(dstPath).Length / 1048576.0:F0} MB");
     }
 }
 
@@ -733,6 +749,21 @@ static IEnumerable<uint> CollectIds(object? o, int depth)
         foreach (var x in CollectIds(f.GetValue(o), depth + 1)) yield return x;
     foreach (var p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0 && p.Name is not ("HeaderFlags" or "DBObjType")))
         foreach (var x in CollectIds(p.GetValue(o), depth + 1)) yield return x;
+}
+
+// Lists the portal RenderSurfaces that have a highres version: entry [1] of every two-entry SurfaceTexture
+// ([highres, portal]). The client draws entry [0] at Very High Environment Texture Detail, so these portal copies are
+// only seen below that.
+static void Twins(string datDir, string outPath)
+{
+    using var dats = new DatCollection(datDir, DatAccessType.Read);
+    var ids = new SortedSet<uint>();
+    foreach (var id in dats.Portal.GetAllIdsOfType<SurfaceTexture>())
+        if (dats.Portal.TryGet<SurfaceTexture>(id, out var st) && st.Textures.Count == 2
+            && dats.HighRes.Tree.TryGetFile(st.Textures[0].DataId, out _))
+            ids.Add(st.Textures[1].DataId);
+    File.WriteAllLines(outPath, ids.Select(i => i.ToString("X8")));
+    Console.WriteLine($"{ids.Count} portal textures with a highres version");
 }
 
 // Splits a manifest by usage: RenderSurfaces reached through a SurfaceTexture are mapped onto 3D models/terrain
